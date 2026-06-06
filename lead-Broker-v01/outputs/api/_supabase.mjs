@@ -53,18 +53,29 @@ export async function supabase(path, options = {}) {
   return payload;
 }
 
+function valueOrCurrent(input, key, current = {}) {
+  return Object.prototype.hasOwnProperty.call(input, key) ? input[key] : current[key];
+}
+
+function uniqueImages(images) {
+  return Array.from(new Set((images || []).filter(Boolean)));
+}
+
 export function normalizeLand(input, current = {}) {
+  const image = String(valueOrCurrent(input, "image", current) || "");
+  const gallery = Array.isArray(input.gallery) ? input.gallery : current.gallery || [];
+
   return {
-    title: String(input.title || current.title || "").trim(),
-    price: String(input.price || current.price || "").trim(),
-    location: String(input.location || current.location || "").trim(),
-    size: String(input.size || current.size || "").trim(),
-    description: String(input.description || current.description || "").trim(),
-    long_description: String(input.long_description || current.long_description || "").trim(),
-    seller_name: String(input.seller_name || current.seller_name || "").trim(),
-    seller_phone: String(input.seller_phone || current.seller_phone || "").trim(),
-    seller_description: String(input.seller_description || current.seller_description || "").trim(),
-    gallery: Array.isArray(input.gallery) ? input.gallery : current.gallery || [],
-    image: String(input.image || current.image || ""),
+    title: String(valueOrCurrent(input, "title", current) || "").trim(),
+    price: String(valueOrCurrent(input, "price", current) || "").trim(),
+    location: String(valueOrCurrent(input, "location", current) || "").trim(),
+    size: String(valueOrCurrent(input, "size", current) || "").trim(),
+    description: String(valueOrCurrent(input, "description", current) || "").trim(),
+    long_description: String(valueOrCurrent(input, "long_description", current) || "").trim(),
+    seller_name: String(valueOrCurrent(input, "seller_name", current) || "").trim(),
+    seller_phone: String(valueOrCurrent(input, "seller_phone", current) || "").trim(),
+    seller_description: String(valueOrCurrent(input, "seller_description", current) || "").trim(),
+    gallery: uniqueImages(gallery).filter((item) => item !== image),
+    image,
   };
 }

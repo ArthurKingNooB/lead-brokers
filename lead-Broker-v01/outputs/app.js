@@ -340,6 +340,24 @@ function landImages(land) {
   return [land.image, ...gallery].filter(Boolean);
 }
 
+function uniqueImages(images) {
+  return Array.from(new Set((images || []).filter(Boolean)));
+}
+
+function buildImagePayload(currentLand, uploadedMainImage, uploadedGallery) {
+  const currentImage = currentLand?.image || "";
+  const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery : [];
+  const nextImage = uploadedMainImage || currentImage || uploadedGallery[0] || "";
+  const gallerySeed = uploadedMainImage && currentImage && currentImage !== uploadedMainImage
+    ? [currentImage, ...currentGallery]
+    : currentGallery;
+
+  return {
+    image: nextImage,
+    gallery: uniqueImages([...gallerySeed, ...uploadedGallery]).filter((image) => image !== nextImage),
+  };
+}
+
 function galleryItem(image, land, className, index = 0) {
   const isThumb = className.includes("thumb");
   const attributes = isThumb
@@ -690,7 +708,7 @@ function setupLandManager() {
       const image = await fileToDataUrl(data.get("image"));
       const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
       const currentLand = landsCache.find((land) => land.id === editingId);
-      const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery : [];
+      const imagePayload = buildImagePayload(currentLand, image, gallery);
       const currency = data.get("priceCurrency");
       const amount = onlyDigits(data.get("priceAmount"));
 
@@ -705,8 +723,8 @@ function setupLandManager() {
         seller_name: data.get("sellerName"),
         seller_phone: data.get("sellerPhone"),
         seller_description: data.get("sellerDescription"),
-        gallery: gallery.length ? [...currentGallery, ...gallery] : currentGallery,
-        image: image || currentLand?.image || gallery[0] || "",
+        gallery: imagePayload.gallery,
+        image: imagePayload.image,
       });
 
       resetLandForm();
