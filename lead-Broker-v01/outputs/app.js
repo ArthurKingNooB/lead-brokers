@@ -337,24 +337,30 @@ function landCardImage(land) {
 
 function landImages(land) {
   const gallery = Array.isArray(land.gallery) ? land.gallery : [];
-  return [land.image, ...gallery].filter(Boolean);
+  return [land.image, ...gallery].filter(isImageSource);
+}
+
+function isImageSource(value) {
+  const source = String(value || "").trim();
+  return source.startsWith("data:image/") || source.startsWith("http://") || source.startsWith("https://");
 }
 
 function uniqueImages(images) {
-  return Array.from(new Set((images || []).filter(Boolean)));
+  return Array.from(new Set((images || []).filter(isImageSource)));
 }
 
 function buildImagePayload(currentLand, uploadedMainImage, uploadedGallery) {
-  const currentImage = currentLand?.image || "";
-  const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery : [];
-  const nextImage = uploadedMainImage || currentImage || uploadedGallery[0] || "";
+  const currentImage = isImageSource(currentLand?.image) ? currentLand.image : "";
+  const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery.filter(isImageSource) : [];
+  const nextGallery = uploadedGallery.filter(isImageSource);
+  const nextImage = uploadedMainImage || currentImage || nextGallery[0] || "";
   const gallerySeed = uploadedMainImage && currentImage && currentImage !== uploadedMainImage
     ? [currentImage, ...currentGallery]
     : currentGallery;
 
   return {
     image: nextImage,
-    gallery: uniqueImages([...gallerySeed, ...uploadedGallery]).filter((image) => image !== nextImage),
+    gallery: uniqueImages([...gallerySeed, ...nextGallery]).filter((image) => image !== nextImage),
   };
 }
 
@@ -553,7 +559,7 @@ function updatePricePreview() {
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
-    if (!file) {
+    if (!file || !file.size || !file.type.startsWith("image/")) {
       resolve("");
       return;
     }

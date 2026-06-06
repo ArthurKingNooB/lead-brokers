@@ -57,12 +57,18 @@ function valueOrCurrent(input, key, current = {}) {
   return Object.prototype.hasOwnProperty.call(input, key) ? input[key] : current[key];
 }
 
+function isImageSource(value) {
+  const source = String(value || "").trim();
+  return source.startsWith("data:image/") || source.startsWith("http://") || source.startsWith("https://");
+}
+
 function uniqueImages(images) {
-  return Array.from(new Set((images || []).filter(Boolean)));
+  return Array.from(new Set((images || []).filter(isImageSource)));
 }
 
 export function normalizeLand(input, current = {}) {
-  const image = String(valueOrCurrent(input, "image", current) || "");
+  const rawImage = String(valueOrCurrent(input, "image", current) || "");
+  const image = isImageSource(rawImage) ? rawImage : "";
   const gallery = Array.isArray(input.gallery) ? input.gallery : current.gallery || [];
 
   return {
