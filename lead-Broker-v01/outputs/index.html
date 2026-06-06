@@ -220,7 +220,14 @@
             </label>
             <label>
               Precio
-              <input name="price" type="text" required placeholder="Ej: USD 38.000" />
+              <div class="price-field">
+                <select name="priceCurrency" id="priceCurrency" aria-label="Moneda" required>
+                  <option value="USD">USD - Dólares</option>
+                  <option value="UYU">$ - Pesos</option>
+                </select>
+                <input name="priceAmount" id="priceAmount" type="text" inputmode="numeric" required placeholder="Ej: 32000" />
+              </div>
+              <span class="price-preview" id="pricePreview">Vista previa: USD 32.000</span>
             </label>
             <label>
               Ubicación

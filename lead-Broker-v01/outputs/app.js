@@ -68,6 +68,35 @@ function whatsappUrl(message) {
   return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 }
 
+function onlyDigits(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function formatThousands(value) {
+  const digits = onlyDigits(value);
+  if (!digits) return "";
+  return Number(digits).toLocaleString("es-UY");
+}
+
+function formatPrice(currency, amount) {
+  const formattedAmount = formatThousands(amount);
+  if (!formattedAmount) return "Consultar";
+  return currency === "UYU" ? `$ ${formattedAmount}` : `USD ${formattedAmount}`;
+}
+
+function parsePrice(price) {
+  const value = String(price || "");
+  const currency = value.trim().startsWith("$") ? "UYU" : "USD";
+  return {
+    currency,
+    amount: onlyDigits(value),
+  };
+}
+
+function displayPrice(land) {
+  return formatPrice(land.priceCurrency || parsePrice(land.price).currency, land.priceAmount || parsePrice(land.price).amount);
+}
+
 function setWhatsappLinks() {
   const url = whatsappUrl(baseMessage);
   ["heroWhatsapp", "directWhatsapp", "floatingWhatsapp"].forEach((id) => {
@@ -290,7 +319,7 @@ async function renderLands() {
   const lands = await loadLands();
   const admin = isAdminLoggedIn();
   const filtered = lands.filter((land) =>
-    [land.title, land.price, land.location, land.size, land.description]
+    [land.title, displayPrice(land), land.location, land.size, land.description]
       .join(" ")
       .toLowerCase()
       .includes(query)
@@ -303,10 +332,11 @@ async function renderLands() {
 
   list.innerHTML = filtered
     .map((land) => {
+      const landPrice = displayPrice(land);
       const message = [
         "Hola Agustina, quiero consultar por este terreno.",
         `Terreno: ${land.title}`,
-        `Precio: ${land.price}`,
+        `Precio: ${landPrice}`,
         `Ubicacion: ${land.location}`,
         `Superficie: ${land.size}`,
       ].join("\n");
@@ -315,7 +345,7 @@ async function renderLands() {
         <article class="land-card">
           <div class="land-image">
             ${landCardImage(land)}
-            <span class="land-price">${escapeHtml(land.price)}</span>
+            <span class="land-price">${escapeHtml(landPrice)}</span>
           </div>
           <div class="land-body">
             <div>
@@ -366,8 +396,19 @@ function resetLandForm() {
 
   form.reset();
   form.elements.landId.value = "";
+  if (form.elements.priceCurrency) form.elements.priceCurrency.value = "USD";
+  updatePricePreview();
   if (title) title.textContent = "Subir nuevo terreno";
   if (note) note.textContent = "";
+}
+
+function updatePricePreview() {
+  const currency = document.getElementById("priceCurrency");
+  const amount = document.getElementById("priceAmount");
+  const preview = document.getElementById("pricePreview");
+  if (!currency || !amount || !preview) return;
+
+  preview.textContent = `Vista previa: ${formatPrice(currency.value, amount.value || "32000")}`;
 }
 
 function fileToDataUrl(file) {
@@ -392,6 +433,8 @@ function setupLandManager() {
   const note = document.getElementById("landNote");
   const search = document.getElementById("landSearch");
   const list = document.getElementById("landList");
+  const priceCurrency = document.getElementById("priceCurrency");
+  const priceAmount = document.getElementById("priceAmount");
 
   if (!form || !toggle || !list) return;
 
@@ -402,6 +445,19 @@ function setupLandManager() {
 
   if (search) {
     search.addEventListener("input", () => renderLands());
+  }
+
+  if (priceCurrency) {
+    priceCurrency.addEventListener("change", updatePricePreview);
+  }
+
+  if (priceAmount) {
+    priceAmount.addEventListener("input", () => {
+      const position = priceAmount.selectionStart;
+      priceAmount.value = formatThousands(priceAmount.value);
+      priceAmount.setSelectionRange(priceAmount.value.length, priceAmount.value.length || position);
+      updatePricePreview();
+    });
   }
 
   if (reset) {
@@ -430,12 +486,15 @@ function setupLandManager() {
       if (!land) return;
 
       form.classList.remove("is-hidden");
+      const parsedPrice = parsePrice(land.price);
       form.elements.landId.value = land.id;
       form.elements.title.value = land.title;
-      form.elements.price.value = land.price;
+      form.elements.priceCurrency.value = land.priceCurrency || parsedPrice.currency;
+      form.elements.priceAmount.value = formatThousands(land.priceAmount || parsedPrice.amount);
       form.elements.location.value = land.location;
       form.elements.size.value = land.size;
       form.elements.description.value = land.description;
+      updatePricePreview();
       if (title) title.textContent = "Editar terreno";
       if (note) note.textContent = "Editando terreno. La imagen solo cambia si subis una nueva.";
       form.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -456,11 +515,13 @@ function setupLandManager() {
     const image = await fileToDataUrl(data.get("image"));
     const editingId = data.get("landId");
     const currentLand = landsCache.find((land) => land.id === editingId);
+    const currency = data.get("priceCurrency");
+    const amount = onlyDigits(data.get("priceAmount"));
 
     await saveLand({
       id: editingId || undefined,
       title: data.get("title"),
-      price: data.get("price"),
+      price: formatPrice(currency, amount),
       location: data.get("location"),
       size: data.get("size"),
       description: data.get("description"),

@@ -607,6 +607,18 @@ textarea {
   gap: 1rem;
 }
 
+.price-field {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.38fr) minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.price-preview {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .provider-band {
   background:
     linear-gradient(135deg, rgba(33, 166, 110, 0.18), transparent 40%),
@@ -808,6 +820,7 @@ footer a {
   .service-grid,
   .land-grid,
   .form-grid,
+  .price-field,
   .timeline,
   .mini-grid,
   .trust-strip {
