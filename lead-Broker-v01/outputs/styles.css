@@ -459,6 +459,12 @@ textarea {
   font-weight: 800;
 }
 
+.file-helper {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
 .land-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -885,6 +891,19 @@ footer {
   padding: 1.4rem clamp(1rem, 4vw, 4.5rem);
   border-top: 1px solid var(--line);
   color: var(--muted);
+}
+
+.copyright-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  margin-right: 0.25rem;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  color: var(--gold-soft);
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 footer p {

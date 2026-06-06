@@ -327,8 +327,9 @@ function placeholderLandSvg(title) {
 }
 
 function landCardImage(land) {
-  if (land.image) {
-    return `<img src="${land.image}" alt="Imagen de ${escapeHtml(land.title)}" />`;
+  const image = landImages(land)[0];
+  if (image) {
+    return `<img src="${image}" alt="Imagen de ${escapeHtml(land.title)}" />`;
   }
 
   return placeholderLandSvg(land.title);
@@ -504,6 +505,7 @@ function resetLandForm() {
   const title = document.getElementById("landFormTitle");
   const note = document.getElementById("landNote");
   const submitButton = document.getElementById("landSubmitButton");
+  const galleryCount = document.getElementById("galleryCount");
   if (!form) return;
 
   form.reset();
@@ -513,6 +515,7 @@ function resetLandForm() {
   if (title) title.textContent = "Subir nuevo terreno";
   if (submitButton) submitButton.textContent = "Publicar terreno";
   if (note) note.textContent = "";
+  if (galleryCount) galleryCount.textContent = "Podés elegir varias fotos juntas desde tu PC.";
 }
 
 function closeLandForm() {
@@ -558,6 +561,8 @@ function setupLandManager() {
   const list = document.getElementById("landList");
   const priceCurrency = document.getElementById("priceCurrency");
   const priceAmount = document.getElementById("priceAmount");
+  const galleryInput = document.getElementById("galleryInput");
+  const galleryCount = document.getElementById("galleryCount");
 
   if (!form || !toggle || !list) return;
 
@@ -598,6 +603,15 @@ function setupLandManager() {
 
     sizeInput.addEventListener("blur", () => {
       sizeInput.value = formatSize(sizeInput.value);
+    });
+  }
+
+  if (galleryInput && galleryCount) {
+    galleryInput.addEventListener("change", () => {
+      const count = galleryInput.files ? galleryInput.files.length : 0;
+      galleryCount.textContent = count
+        ? `${count} ${count === 1 ? "foto seleccionada" : "fotos seleccionadas"} para cargar.`
+        : "Podés elegir varias fotos juntas desde tu PC.";
     });
   }
 
@@ -649,7 +663,8 @@ function setupLandManager() {
       updatePricePreview();
       if (title) title.textContent = "Editar terreno";
       if (submitButton) submitButton.textContent = "Guardar cambios";
-      if (note) note.textContent = "Editando terreno. La imagen solo cambia si subis una nueva.";
+      if (note) note.textContent = "Editando terreno. La imagen principal cambia si subis una nueva; las fotos de galeria nuevas se suman a las existentes.";
+      if (galleryCount) galleryCount.textContent = "Podés sumar varias fotos nuevas desde tu PC.";
       form.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -675,6 +690,7 @@ function setupLandManager() {
       const image = await fileToDataUrl(data.get("image"));
       const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
       const currentLand = landsCache.find((land) => land.id === editingId);
+      const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery : [];
       const currency = data.get("priceCurrency");
       const amount = onlyDigits(data.get("priceAmount"));
 
@@ -689,8 +705,8 @@ function setupLandManager() {
         seller_name: data.get("sellerName"),
         seller_phone: data.get("sellerPhone"),
         seller_description: data.get("sellerDescription"),
-        gallery: gallery.length ? gallery : currentLand?.gallery || [],
-        image: image || currentLand?.image || "",
+        gallery: gallery.length ? [...currentGallery, ...gallery] : currentGallery,
+        image: image || currentLand?.image || gallery[0] || "",
       });
 
       resetLandForm();
@@ -733,6 +749,11 @@ function setupLandDetailModal() {
     event.preventDefault();
     selectGalleryImage(content, thumb);
   });
+}
+
+function setupFooterYear() {
+  const year = document.getElementById("copyrightYear");
+  if (year) year.textContent = String(new Date().getFullYear());
 }
 
 function selectGalleryImage(content, thumb) {
@@ -844,6 +865,7 @@ function setupForm() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   setWhatsappLinks();
+  setupFooterYear();
   renderProperties();
   setupNavigation();
   setupForm();
