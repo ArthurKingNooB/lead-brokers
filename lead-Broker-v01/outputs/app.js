@@ -485,6 +485,7 @@ function resetLandForm() {
   const form = document.getElementById("landForm");
   const title = document.getElementById("landFormTitle");
   const note = document.getElementById("landNote");
+  const submitButton = document.getElementById("landSubmitButton");
   if (!form) return;
 
   form.reset();
@@ -492,7 +493,14 @@ function resetLandForm() {
   if (form.elements.priceCurrency) form.elements.priceCurrency.value = "USD";
   updatePricePreview();
   if (title) title.textContent = "Subir nuevo terreno";
+  if (submitButton) submitButton.textContent = "Publicar terreno";
   if (note) note.textContent = "";
+}
+
+function closeLandForm() {
+  const form = document.getElementById("landForm");
+  resetLandForm();
+  if (form) form.classList.add("is-hidden");
 }
 
 function updatePricePreview() {
@@ -568,7 +576,7 @@ function setupLandManager() {
   }
 
   if (cancelEdit) {
-    cancelEdit.addEventListener("click", resetLandForm);
+    cancelEdit.addEventListener("click", closeLandForm);
   }
 
   list.addEventListener("click", async (event) => {
@@ -586,6 +594,7 @@ function setupLandManager() {
     if (editButton) {
       const land = landsCache.find((item) => item.id === editButton.dataset.landId);
       const title = document.getElementById("landFormTitle");
+      const submitButton = document.getElementById("landSubmitButton");
       if (!land) return;
 
       form.classList.remove("is-hidden");
@@ -603,6 +612,7 @@ function setupLandManager() {
       form.elements.sellerDescription.value = land.seller_description || land.sellerDescription || "";
       updatePricePreview();
       if (title) title.textContent = "Editar terreno";
+      if (submitButton) submitButton.textContent = "Guardar cambios";
       if (note) note.textContent = "Editando terreno. La imagen solo cambia si subis una nueva.";
       form.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
@@ -618,32 +628,46 @@ function setupLandManager() {
     event.preventDefault();
     if (!isAdminLoggedIn()) return;
 
+    const submitButton = document.getElementById("landSubmitButton");
     const data = new FormData(form);
-    const image = await fileToDataUrl(data.get("image"));
-    const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
     const editingId = data.get("landId");
-    const currentLand = landsCache.find((land) => land.id === editingId);
-    const currency = data.get("priceCurrency");
-    const amount = onlyDigits(data.get("priceAmount"));
 
-    await saveLand({
-      id: editingId || undefined,
-      title: data.get("title"),
-      price: formatPrice(currency, amount),
-      location: data.get("location"),
-      size: data.get("size"),
-      description: data.get("description"),
-      long_description: data.get("longDescription"),
-      seller_name: data.get("sellerName"),
-      seller_phone: data.get("sellerPhone"),
-      seller_description: data.get("sellerDescription"),
-      gallery: gallery.length ? gallery : currentLand?.gallery || [],
-      image: image || currentLand?.image || "",
-    });
+    try {
+      if (note) note.textContent = editingId ? "Guardando cambios..." : "Publicando terreno...";
+      if (submitButton) submitButton.disabled = true;
 
-    resetLandForm();
-    await renderLands();
-    if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
+      const image = await fileToDataUrl(data.get("image"));
+      const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
+      const currentLand = landsCache.find((land) => land.id === editingId);
+      const currency = data.get("priceCurrency");
+      const amount = onlyDigits(data.get("priceAmount"));
+
+      await saveLand({
+        id: editingId || undefined,
+        title: data.get("title"),
+        price: formatPrice(currency, amount),
+        location: data.get("location"),
+        size: data.get("size"),
+        description: data.get("description"),
+        long_description: data.get("longDescription"),
+        seller_name: data.get("sellerName"),
+        seller_phone: data.get("sellerPhone"),
+        seller_description: data.get("sellerDescription"),
+        gallery: gallery.length ? gallery : currentLand?.gallery || [],
+        image: image || currentLand?.image || "",
+      });
+
+      resetLandForm();
+      form.classList.add("is-hidden");
+      await renderLands();
+      if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
+    } catch (error) {
+      if (note) {
+        note.textContent = `No se pudo guardar: ${error.message}. Si agregaste la ficha ampliada, ejecuta el SQL actualizado en Supabase.`;
+      }
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
   });
 }
 
