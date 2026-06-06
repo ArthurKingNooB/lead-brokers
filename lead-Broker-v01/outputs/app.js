@@ -42,6 +42,11 @@ const defaultLands = [
     location: "Zona residencial",
     size: "420 m2",
     description: "Lote parejo, buen acceso, luz y agua disponibles. Ideal para vivienda o inversion.",
+    long_description: "Lote parejo con buen acceso, servicios disponibles y entorno residencial. Ideal para vivienda familiar o inversion a mediano plazo.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Intermediaria comercial de Lead Brokers. Coordina consultas, visitas y seguimiento hasta el cierre.",
+    gallery: [],
     image: "",
   },
   {
@@ -51,6 +56,11 @@ const defaultLands = [
     location: "A metros de ruta principal",
     size: "900 m2",
     description: "Excelente frente, entorno en crecimiento y potencial para proyecto comercial.",
+    long_description: "Terreno amplio con frente destacado, buena exposicion y acceso rapido. Recomendado para desarrollo, deposito, local o inversion comercial.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Lead Brokers acompana la conexion entre vendedor e interesados calificados.",
+    gallery: [],
     image: "",
   },
   {
@@ -60,6 +70,11 @@ const defaultLands = [
     location: "Barrio tranquilo",
     size: "510 m2",
     description: "Documentacion ordenada, zona con buena demanda y consultas activas.",
+    long_description: "Terreno en barrio tranquilo con documentacion ordenada. Buena opcion para quienes buscan avanzar con una operacion clara y acompanada.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Gestion comercial con foco en transparencia, contacto directo y cierre ordenado.",
+    gallery: [],
     image: "",
   },
 ];
@@ -310,6 +325,83 @@ function landCardImage(land) {
   return placeholderLandSvg(land.title);
 }
 
+function landImages(land) {
+  const gallery = Array.isArray(land.gallery) ? land.gallery : [];
+  return [land.image, ...gallery].filter(Boolean);
+}
+
+function galleryItem(image, land, className) {
+  return image
+    ? `<div class="${className}"><img src="${image}" alt="Imagen de ${escapeHtml(land.title)}" /></div>`
+    : `<div class="${className}">${placeholderLandSvg(land.title)}</div>`;
+}
+
+function openLandDetail(id) {
+  const land = landsCache.find((item) => item.id === id);
+  const modal = document.getElementById("landDetailModal");
+  const content = document.getElementById("landDetailContent");
+  if (!land || !modal || !content) return;
+
+  const landPrice = displayPrice(land);
+  const images = landImages(land);
+  const mainImage = images[0] || "";
+  const thumbs = (images.length ? images.slice(1, 5) : ["", ""]).slice(0, 4);
+  const sellerName = land.seller_name || land.sellerName || "Agustina";
+  const sellerPhone = land.seller_phone || land.sellerPhone || "092 420 997";
+  const sellerDescription =
+    land.seller_description ||
+    land.sellerDescription ||
+    "Intermediacion comercial con seguimiento personalizado para coordinar consultas, visitas y cierre.";
+  const longDescription = land.long_description || land.longDescription || land.description;
+  const message = [
+    "Hola Agustina, quiero consultar por este terreno.",
+    `Terreno: ${land.title}`,
+    `Precio: ${landPrice}`,
+    `Ubicacion: ${land.location}`,
+    `Superficie: ${land.size}`,
+  ].join("\n");
+
+  content.innerHTML = `
+    <div class="land-detail-head">
+      <div>
+        <p class="eyebrow">Ficha del terreno</p>
+        <h2>${escapeHtml(land.title)}</h2>
+        <div class="land-meta">
+          <span>${escapeHtml(landPrice)}</span>
+          <span>${escapeHtml(land.location)}</span>
+          <span>${escapeHtml(land.size)}</span>
+        </div>
+      </div>
+      <button class="land-detail-close" type="button" data-close-detail aria-label="Cerrar">×</button>
+    </div>
+    <div class="land-gallery">
+      ${galleryItem(mainImage, land, "land-gallery-main")}
+      <div class="land-gallery-thumbs">
+        ${thumbs.map((image) => galleryItem(image, land, "land-gallery-thumb")).join("")}
+      </div>
+    </div>
+    <div class="land-detail-grid">
+      <div class="land-detail-panel">
+        <h3>Descripcion completa</h3>
+        <p>${escapeHtml(longDescription).replaceAll("\n", "<br>")}</p>
+      </div>
+      <aside class="land-detail-panel seller-box">
+        <h3>Vendedor</h3>
+        <strong>${escapeHtml(sellerName)}</strong>
+        <p>${escapeHtml(sellerDescription).replaceAll("\n", "<br>")}</p>
+        <span class="tag">${escapeHtml(sellerPhone)}</span>
+        <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+      </aside>
+    </div>
+  `;
+
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "");
+  }
+}
+
 async function renderLands() {
   const list = document.getElementById("landList");
   const search = document.getElementById("landSearch");
@@ -357,7 +449,8 @@ async function renderLands() {
             </div>
             <p>${escapeHtml(land.description)}</p>
             <div class="land-actions">
-              <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">Consultar compra</a>
+              <button class="view-land" type="button" data-land-id="${escapeHtml(land.id)}">Ver ficha</button>
+              <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">WhatsApp</a>
               <button class="edit-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Editar</button>
               <button class="delete-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Borrar</button>
             </div>
@@ -425,6 +518,10 @@ function fileToDataUrl(file) {
   });
 }
 
+async function filesToDataUrls(files) {
+  return Promise.all(Array.from(files || []).map((file) => fileToDataUrl(file)));
+}
+
 function setupLandManager() {
   const form = document.getElementById("landForm");
   const toggle = document.getElementById("toggleAdmin");
@@ -475,6 +572,12 @@ function setupLandManager() {
   }
 
   list.addEventListener("click", async (event) => {
+    const viewButton = event.target.closest(".view-land");
+    if (viewButton) {
+      openLandDetail(viewButton.dataset.landId);
+      return;
+    }
+
     if (!isAdminLoggedIn()) return;
 
     const editButton = event.target.closest(".edit-land");
@@ -494,6 +597,10 @@ function setupLandManager() {
       form.elements.location.value = land.location;
       form.elements.size.value = land.size;
       form.elements.description.value = land.description;
+      form.elements.longDescription.value = land.long_description || land.longDescription || "";
+      form.elements.sellerName.value = land.seller_name || land.sellerName || "";
+      form.elements.sellerPhone.value = land.seller_phone || land.sellerPhone || "";
+      form.elements.sellerDescription.value = land.seller_description || land.sellerDescription || "";
       updatePricePreview();
       if (title) title.textContent = "Editar terreno";
       if (note) note.textContent = "Editando terreno. La imagen solo cambia si subis una nueva.";
@@ -513,6 +620,7 @@ function setupLandManager() {
 
     const data = new FormData(form);
     const image = await fileToDataUrl(data.get("image"));
+    const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
     const editingId = data.get("landId");
     const currentLand = landsCache.find((land) => land.id === editingId);
     const currency = data.get("priceCurrency");
@@ -525,12 +633,29 @@ function setupLandManager() {
       location: data.get("location"),
       size: data.get("size"),
       description: data.get("description"),
+      long_description: data.get("longDescription"),
+      seller_name: data.get("sellerName"),
+      seller_phone: data.get("sellerPhone"),
+      seller_description: data.get("sellerDescription"),
+      gallery: gallery.length ? gallery : currentLand?.gallery || [],
       image: image || currentLand?.image || "",
     });
 
     resetLandForm();
     await renderLands();
     if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
+  });
+}
+
+function setupLandDetailModal() {
+  const modal = document.getElementById("landDetailModal");
+  const content = document.getElementById("landDetailContent");
+  if (!modal || !content) return;
+
+  content.addEventListener("click", (event) => {
+    if (event.target.closest("[data-close-detail]")) {
+      modal.close();
+    }
   });
 }
 
@@ -625,6 +750,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupForm();
   setupLogin();
   setupLandManager();
+  setupLandDetailModal();
   await updateAdminUi();
 
   const filter = document.getElementById("propertyFilter");

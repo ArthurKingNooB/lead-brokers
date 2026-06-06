@@ -243,8 +243,30 @@
             <input name="image" type="file" accept="image/*" />
           </label>
           <label>
-            Detalles
+            Galería de imágenes
+            <input name="gallery" type="file" accept="image/*" multiple />
+          </label>
+          <label>
+            Detalles cortos
             <textarea name="description" rows="4" required placeholder="Acceso, servicios, escritura, financiación, entorno, etc."></textarea>
+          </label>
+          <label>
+            Descripción completa
+            <textarea name="longDescription" rows="6" placeholder="Información ampliada del terreno, entorno, accesos, documentación, servicios, financiación y puntos destacados."></textarea>
+          </label>
+          <div class="form-grid">
+            <label>
+              Vendedor
+              <input name="sellerName" type="text" placeholder="Ej: Agustina / Propietario directo" />
+            </label>
+            <label>
+              Teléfono del vendedor
+              <input name="sellerPhone" type="tel" placeholder="Ej: 092 420 997" />
+            </label>
+          </div>
+          <label>
+            Descripción del vendedor
+            <textarea name="sellerDescription" rows="3" placeholder="Breve presentación del vendedor, tipo de operación, disponibilidad o forma de contacto."></textarea>
           </label>
           <button class="btn primary" type="submit">Publicar terreno</button>
           <p class="form-note" id="landNote" role="status"></p>
@@ -372,6 +394,10 @@
         <button class="btn primary" type="submit">Iniciar sesión</button>
         <p class="form-note" id="loginNote" role="status"></p>
       </form>
+    </dialog>
+
+    <dialog class="land-modal" id="landDetailModal">
+      <div class="land-detail" id="landDetailContent"></div>
     </dialog>
 
     <footer>

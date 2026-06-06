@@ -19,6 +19,11 @@ const defaultLands = [
     location: "Zona residencial",
     size: "420 m2",
     description: "Lote parejo, buen acceso, luz y agua disponibles. Ideal para vivienda o inversion.",
+    long_description: "Lote parejo con buen acceso, servicios disponibles y entorno residencial. Ideal para vivienda familiar o inversion a mediano plazo.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Intermediaria comercial de Lead Brokers. Coordina consultas, visitas y seguimiento hasta el cierre.",
+    gallery: [],
     image: "",
   },
   {
@@ -28,6 +33,11 @@ const defaultLands = [
     location: "A metros de ruta principal",
     size: "900 m2",
     description: "Excelente frente, entorno en crecimiento y potencial para proyecto comercial.",
+    long_description: "Terreno amplio con frente destacado, buena exposicion y acceso rapido. Recomendado para desarrollo, deposito, local o inversion comercial.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Lead Brokers acompana la conexion entre vendedor e interesados calificados.",
+    gallery: [],
     image: "",
   },
   {
@@ -37,6 +47,11 @@ const defaultLands = [
     location: "Barrio tranquilo",
     size: "510 m2",
     description: "Documentacion ordenada, zona con buena demanda y consultas activas.",
+    long_description: "Terreno en barrio tranquilo con documentacion ordenada. Buena opcion para quienes buscan avanzar con una operacion clara y acompanada.",
+    seller_name: "Agustina",
+    seller_phone: "092 420 997",
+    seller_description: "Gestion comercial con foco en transparencia, contacto directo y cierre ordenado.",
+    gallery: [],
     image: "",
   },
 ];
@@ -133,6 +148,11 @@ function cleanLand(input, current = {}) {
     location: String(input.location || current.location || "").trim(),
     size: String(input.size || current.size || "").trim(),
     description: String(input.description || current.description || "").trim(),
+    long_description: String(input.long_description || current.long_description || "").trim(),
+    seller_name: String(input.seller_name || current.seller_name || "").trim(),
+    seller_phone: String(input.seller_phone || current.seller_phone || "").trim(),
+    seller_description: String(input.seller_description || current.seller_description || "").trim(),
+    gallery: Array.isArray(input.gallery) ? input.gallery : current.gallery || [],
     image: String(input.image || current.image || ""),
   };
 }

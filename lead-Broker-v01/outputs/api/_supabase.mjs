@@ -60,6 +60,11 @@ export function normalizeLand(input, current = {}) {
     location: String(input.location || current.location || "").trim(),
     size: String(input.size || current.size || "").trim(),
     description: String(input.description || current.description || "").trim(),
+    long_description: String(input.long_description || current.long_description || "").trim(),
+    seller_name: String(input.seller_name || current.seller_name || "").trim(),
+    seller_phone: String(input.seller_phone || current.seller_phone || "").trim(),
+    seller_description: String(input.seller_description || current.seller_description || "").trim(),
+    gallery: Array.isArray(input.gallery) ? input.gallery : current.gallery || [],
     image: String(input.image || current.image || ""),
   };
 }
