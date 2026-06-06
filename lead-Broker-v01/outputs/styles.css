@@ -801,6 +801,19 @@ textarea {
 
 .land-gallery-thumb {
   min-height: 10.6rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.land-gallery-thumb:hover,
+.land-gallery-thumb:focus-visible,
+.land-gallery-thumb.is-active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(230, 196, 125, 0.22);
+}
+
+.land-gallery-thumb:hover {
+  transform: translateY(-1px);
 }
 
 .land-gallery-thumb img,

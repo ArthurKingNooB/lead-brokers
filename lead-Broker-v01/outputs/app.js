@@ -99,6 +99,15 @@ function formatPrice(currency, amount) {
   return currency === "UYU" ? `$ ${formattedAmount}` : `USD ${formattedAmount}`;
 }
 
+function formatSize(value) {
+  const formattedSize = formatThousands(value);
+  return formattedSize ? `${formattedSize} m²` : "";
+}
+
+function parseSize(size) {
+  return onlyDigits(size);
+}
+
 function parsePrice(price) {
   const value = String(price || "");
   const currency = value.trim().startsWith("$") ? "UYU" : "USD";
@@ -330,10 +339,16 @@ function landImages(land) {
   return [land.image, ...gallery].filter(Boolean);
 }
 
-function galleryItem(image, land, className) {
+function galleryItem(image, land, className, index = 0) {
+  const isThumb = className.includes("thumb");
+  const attributes = isThumb
+    ? `role="button" tabindex="0" data-gallery-index="${index}"`
+    : `data-gallery-main`;
+  const activeClass = isThumb && index === 0 ? " is-active" : "";
+
   return image
-    ? `<div class="${className}"><img src="${image}" alt="Imagen de ${escapeHtml(land.title)}" /></div>`
-    : `<div class="${className}">${placeholderLandSvg(land.title)}</div>`;
+    ? `<div class="${className}${activeClass}" ${attributes}><img src="${image}" alt="Imagen de ${escapeHtml(land.title)}" /></div>`
+    : `<div class="${className}${activeClass}" ${attributes}>${placeholderLandSvg(land.title)}</div>`;
 }
 
 function openLandDetail(id) {
@@ -344,8 +359,9 @@ function openLandDetail(id) {
 
   const landPrice = displayPrice(land);
   const images = landImages(land);
-  const mainImage = images[0] || "";
-  const thumbs = (images.length ? images.slice(1, 5) : ["", ""]).slice(0, 4);
+  const galleryImages = images.length ? images : [""];
+  const mainImage = galleryImages[0];
+  const thumbs = galleryImages.slice(0, 6);
   const sellerName = land.seller_name || land.sellerName || "Agustina";
   const sellerPhone = land.seller_phone || land.sellerPhone || "092 420 997";
   const sellerDescription =
@@ -361,6 +377,8 @@ function openLandDetail(id) {
     `Superficie: ${land.size}`,
   ].join("\n");
 
+  content.dataset.gallery = JSON.stringify(galleryImages);
+  content.dataset.landTitle = land.title;
   content.innerHTML = `
     <div class="land-detail-head">
       <div>
@@ -375,9 +393,9 @@ function openLandDetail(id) {
       <button class="land-detail-close" type="button" data-close-detail aria-label="Cerrar">×</button>
     </div>
     <div class="land-gallery">
-      ${galleryItem(mainImage, land, "land-gallery-main")}
+      ${galleryItem(mainImage, land, "land-gallery-main", 0)}
       <div class="land-gallery-thumbs">
-        ${thumbs.map((image) => galleryItem(image, land, "land-gallery-thumb")).join("")}
+        ${thumbs.map((image, index) => galleryItem(image, land, "land-gallery-thumb", index)).join("")}
       </div>
     </div>
     <div class="land-detail-grid">
@@ -543,6 +561,8 @@ function setupLandManager() {
 
   if (!form || !toggle || !list) return;
 
+  const sizeInput = form.elements.size;
+
   toggle.addEventListener("click", () => {
     if (!isAdminLoggedIn()) return;
     form.classList.toggle("is-hidden");
@@ -562,6 +582,22 @@ function setupLandManager() {
       priceAmount.value = formatThousands(priceAmount.value);
       priceAmount.setSelectionRange(priceAmount.value.length, priceAmount.value.length || position);
       updatePricePreview();
+    });
+  }
+
+  if (sizeInput) {
+    sizeInput.addEventListener("focus", () => {
+      sizeInput.value = formatThousands(sizeInput.value);
+    });
+
+    sizeInput.addEventListener("input", () => {
+      const position = sizeInput.selectionStart;
+      sizeInput.value = formatThousands(sizeInput.value);
+      sizeInput.setSelectionRange(sizeInput.value.length, sizeInput.value.length || position);
+    });
+
+    sizeInput.addEventListener("blur", () => {
+      sizeInput.value = formatSize(sizeInput.value);
     });
   }
 
@@ -604,7 +640,7 @@ function setupLandManager() {
       form.elements.priceCurrency.value = land.priceCurrency || parsedPrice.currency;
       form.elements.priceAmount.value = formatThousands(land.priceAmount || parsedPrice.amount);
       form.elements.location.value = land.location;
-      form.elements.size.value = land.size;
+      form.elements.size.value = formatSize(parseSize(land.size));
       form.elements.description.value = land.description;
       form.elements.longDescription.value = land.long_description || land.longDescription || "";
       form.elements.sellerName.value = land.seller_name || land.sellerName || "";
@@ -647,7 +683,7 @@ function setupLandManager() {
         title: data.get("title"),
         price: formatPrice(currency, amount),
         location: data.get("location"),
-        size: data.get("size"),
+        size: formatSize(data.get("size")),
         description: data.get("description"),
         long_description: data.get("longDescription"),
         seller_name: data.get("sellerName"),
@@ -679,8 +715,47 @@ function setupLandDetailModal() {
   content.addEventListener("click", (event) => {
     if (event.target.closest("[data-close-detail]")) {
       modal.close();
+      return;
+    }
+
+    const thumb = event.target.closest("[data-gallery-index]");
+    if (thumb) {
+      selectGalleryImage(content, thumb);
     }
   });
+
+  content.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    const thumb = event.target.closest("[data-gallery-index]");
+    if (!thumb) return;
+
+    event.preventDefault();
+    selectGalleryImage(content, thumb);
+  });
+}
+
+function selectGalleryImage(content, thumb) {
+  const main = content.querySelector("[data-gallery-main]");
+  if (!main) return;
+
+  let images = [];
+  try {
+    images = JSON.parse(content.dataset.gallery || "[]");
+  } catch (error) {
+    images = [];
+  }
+
+  const index = Number(thumb.dataset.galleryIndex || 0);
+  const image = images[index] || "";
+  const title = content.dataset.landTitle || "Terreno";
+
+  main.innerHTML = image
+    ? `<img src="${image}" alt="Imagen de ${escapeHtml(title)}" />`
+    : placeholderLandSvg(title);
+
+  content.querySelectorAll("[data-gallery-index]").forEach((item) => item.classList.remove("is-active"));
+  thumb.classList.add("is-active");
 }
 
 function setupLogin() {
