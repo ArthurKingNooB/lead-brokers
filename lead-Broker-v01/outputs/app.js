@@ -8,6 +8,8 @@ const fallbackPassword = "agustina2026";
 let apiOnline = true;
 let landsCache = [];
 let clientsCache = [];
+let removedImageUrls = new Set();
+let imageManagerItems = [];
 
 const properties = [
   {
@@ -416,7 +418,7 @@ function landCardImage(land) {
   return placeholderLandSvg(land.title);
 }
 
-function landImages(land) {
+function landImages(land = {}) {
   const gallery = Array.isArray(land.gallery) ? land.gallery : [];
   return [land.image, ...gallery].filter(isImageSource);
 }
@@ -430,12 +432,14 @@ function uniqueImages(images) {
   return Array.from(new Set((images || []).filter(isImageSource)));
 }
 
-function buildImagePayload(currentLand, uploadedMainImage, uploadedGallery) {
-  const currentImage = isImageSource(currentLand?.image) ? currentLand.image : "";
-  const currentGallery = Array.isArray(currentLand?.gallery) ? currentLand.gallery.filter(isImageSource) : [];
+function buildImagePayload(currentLand, uploadedMainImage, uploadedGallery, removedImages = new Set()) {
+  const currentImage = isImageSource(currentLand?.image) && !removedImages.has(currentLand.image) ? currentLand.image : "";
+  const currentGallery = Array.isArray(currentLand?.gallery)
+    ? currentLand.gallery.filter((image) => isImageSource(image) && !removedImages.has(image))
+    : [];
   const nextGallery = uploadedGallery.filter(isImageSource);
   const nextImage = uploadedMainImage || currentImage || nextGallery[0] || "";
-  const gallerySeed = uploadedMainImage && currentImage && currentImage !== uploadedMainImage
+  const gallerySeed = uploadedMainImage && currentImage && currentImage !== uploadedMainImage && !removedImages.has(currentImage)
     ? [currentImage, ...currentGallery]
     : currentGallery;
 
@@ -715,16 +719,22 @@ function resetLandForm() {
   const note = document.getElementById("landNote");
   const submitButton = document.getElementById("landSubmitButton");
   const galleryCount = document.getElementById("galleryCount");
+  const savedImagesPanel = document.getElementById("savedImagesPanel");
+  const savedImagesGrid = document.getElementById("savedImagesGrid");
   if (!form) return;
 
   form.reset();
   form.elements.landId.value = "";
+  removedImageUrls = new Set();
+  imageManagerItems = [];
   if (form.elements.priceCurrency) form.elements.priceCurrency.value = "USD";
   updatePricePreview();
   if (title) title.textContent = "Subir nuevo terreno";
   if (submitButton) submitButton.textContent = "Publicar terreno";
   if (note) note.textContent = "";
   if (galleryCount) galleryCount.textContent = "Podés elegir varias fotos juntas desde tu PC.";
+  if (savedImagesPanel) savedImagesPanel.classList.add("is-hidden");
+  if (savedImagesGrid) savedImagesGrid.innerHTML = "";
 }
 
 function closeLandForm() {
@@ -758,6 +768,34 @@ function fileToDataUrl(file) {
 
 async function filesToDataUrls(files) {
   return Promise.all(Array.from(files || []).map((file) => fileToDataUrl(file)));
+}
+
+function renderSavedImagesManager(land) {
+  const panel = document.getElementById("savedImagesPanel");
+  const grid = document.getElementById("savedImagesGrid");
+  const note = document.getElementById("savedImagesNote");
+  if (!panel || !grid) return;
+
+  imageManagerItems = landImages(land).filter((image) => !removedImageUrls.has(image));
+
+  if (!land?.id || !imageManagerItems.length) {
+    panel.classList.toggle("is-hidden", !land?.id);
+    grid.innerHTML = land?.id ? `<div class="empty-state">No quedan imágenes guardadas para este terreno.</div>` : "";
+    if (note) note.textContent = land?.id ? "Podés cargar nuevas imágenes desde los campos de arriba." : "";
+    return;
+  }
+
+  panel.classList.remove("is-hidden");
+  grid.innerHTML = imageManagerItems
+    .map((image, index) => `
+      <article class="saved-image-card">
+        <img src="${escapeHtml(image)}" alt="Imagen guardada ${index + 1}" />
+        <button type="button" data-remove-saved-image="${index}">Quitar</button>
+      </article>
+    `)
+    .join("");
+
+  if (note) note.textContent = "Las fotos quitadas se eliminan cuando guardás los cambios.";
 }
 
 function setupLandManager() {
@@ -877,6 +915,8 @@ function setupLandManager() {
       form.elements.sellerName.value = land.seller_name || land.sellerName || "";
       form.elements.sellerPhone.value = land.seller_phone || land.sellerPhone || "";
       form.elements.sellerDescription.value = land.seller_description || land.sellerDescription || "";
+      removedImageUrls = new Set();
+      renderSavedImagesManager(land);
       updatePricePreview();
       if (title) title.textContent = "Editar terreno";
       if (submitButton) submitButton.textContent = "Guardar cambios";
@@ -890,6 +930,20 @@ function setupLandManager() {
 
     await deleteLand(deleteButton.dataset.landId);
     await renderLands();
+  });
+
+  form.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-remove-saved-image]");
+    if (!removeButton) return;
+
+    const index = Number(removeButton.dataset.removeSavedImage);
+    const image = imageManagerItems[index];
+    if (!image) return;
+
+    removedImageUrls.add(image);
+    const editingId = form.elements.landId.value;
+    const land = landsCache.find((item) => item.id === editingId);
+    renderSavedImagesManager(land);
   });
 
   form.addEventListener("submit", async (event) => {
@@ -907,7 +961,7 @@ function setupLandManager() {
       const image = await fileToDataUrl(data.get("image"));
       const gallery = await filesToDataUrls(data.getAll("gallery").filter((file) => file && file.size));
       const currentLand = landsCache.find((land) => land.id === editingId);
-      const imagePayload = buildImagePayload(currentLand, image, gallery);
+      const imagePayload = buildImagePayload(currentLand, image, gallery, removedImageUrls);
       const currency = data.get("priceCurrency");
       const amount = onlyDigits(data.get("priceAmount"));
 

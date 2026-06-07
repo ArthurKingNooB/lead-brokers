@@ -469,6 +469,60 @@ textarea {
   overflow-wrap: anywhere;
 }
 
+.saved-images-panel {
+  display: grid;
+  gap: 0.8rem;
+  border: 1px solid rgba(240, 215, 164, 0.24);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 1rem;
+}
+
+.saved-images-panel.is-hidden {
+  display: none;
+}
+
+.saved-images-panel h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.saved-images-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.saved-image-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 9rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: #10201d;
+}
+
+.saved-image-card img {
+  display: block;
+  width: 100%;
+  height: 9rem;
+  object-fit: cover;
+}
+
+.saved-image-card button {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.45rem;
+  background: rgba(7, 16, 15, 0.88);
+  color: var(--gold-soft);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 0.45rem 0.65rem;
+}
+
 .land-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1137,6 +1191,7 @@ footer a {
   .form-grid,
   .price-field,
   .client-list,
+  .saved-images-grid,
   .land-gallery,
   .land-detail-grid,
   .timeline,
@@ -1298,6 +1353,12 @@ footer a {
   .contact-form,
   .land-detail-panel {
     padding: 0.9rem;
+  }
+
+  .saved-image-card,
+  .saved-image-card img {
+    min-height: 11rem;
+    height: 11rem;
   }
 
   .land-actions {
