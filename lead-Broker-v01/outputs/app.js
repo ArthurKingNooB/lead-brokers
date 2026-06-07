@@ -613,6 +613,33 @@ function clientDate(value) {
   }
 }
 
+function clientFollowUpMessage(client) {
+  const name = String(client.name || "").trim() || "buenas";
+  const topic = String(client.topic || "").toLowerCase();
+
+  if (topic.includes("vender una propiedad")) {
+    return `Hola, ${name}. Te escribo por tu consulta. ¿Querés vender una propiedad? Contame bien qué tenés, dónde está ubicada y qué objetivo tenés con la venta.`;
+  }
+
+  if (topic.includes("terreno")) {
+    return `Hola, ${name}. Te escribo por tu consulta sobre terrenos. Contame bien qué querés publicar o qué tipo de terreno estás buscando, así te puedo orientar mejor.`;
+  }
+
+  if (topic.includes("proveedores")) {
+    return `Hola, ${name}. Te escribo por tu consulta. ¿Necesitás proveedores para construir, arreglar o mantener algo? Contame qué necesitás y en qué zona.`;
+  }
+
+  if (topic.includes("local") || topic.includes("negocio") || topic.includes("invers")) {
+    return `Hola, ${name}. Te escribo por tu consulta. ¿Estás buscando local, negocio o una inversión? Contame bien qué estás necesitando y con qué presupuesto aproximado.`;
+  }
+
+  if (topic.includes("contrato") || topic.includes("cierre")) {
+    return `Hola, ${name}. Te escribo por tu consulta. Contame un poco más sobre la operación o contrato que querés cerrar, así vemos cómo ayudarte.`;
+  }
+
+  return `Hola, ${name}. Te escribo por tu consulta. Contame bien qué necesitás y cómo te puedo ayudar.`;
+}
+
 async function renderClients() {
   const list = document.getElementById("clientList");
   if (!list) return;
@@ -640,7 +667,7 @@ async function renderClients() {
           <p>${escapeHtml(client.topic)}</p>
           <p>${escapeHtml(client.message)}</p>
           <div class="client-actions">
-            <a class="btn ghost" href="${whatsappUrl(`Hola, ${client.name}. Te escribo por tu consulta: ${client.topic}`)}" target="_blank" rel="noopener">${escapeHtml(client.phone)}</a>
+            <a class="btn ghost" href="${whatsappUrl(clientFollowUpMessage(client))}" target="_blank" rel="noopener">${escapeHtml(client.phone)}</a>
             <button class="client-done" type="button" data-client-id="${escapeHtml(client.id)}">Listo</button>
           </div>
         </article>
