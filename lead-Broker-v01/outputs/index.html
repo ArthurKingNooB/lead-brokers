@@ -199,6 +199,19 @@
           <button class="btn ghost admin-only is-hidden" type="button" id="toggleAdmin">Cargar terreno</button>
         </div>
 
+        <section class="client-panel admin-only is-hidden" id="clientPanel">
+          <div class="admin-form-head">
+            <div>
+              <p class="eyebrow">Clientes registrados</p>
+              <h3>Consultas recibidas</h3>
+            </div>
+            <button class="btn ghost" type="button" id="refreshClients">Actualizar</button>
+          </div>
+          <div class="client-list" id="clientList" aria-live="polite">
+            <div class="empty-state">Todavía no hay clientes registrados.</div>
+          </div>
+        </section>
+
         <div class="land-grid" id="landList" aria-live="polite"></div>
 
         <form class="admin-form is-hidden" id="landForm">
@@ -392,13 +405,18 @@
           Contraseña
           <input name="password" type="password" autocomplete="current-password" required placeholder="Ingresar contraseña" />
         </label>
-        <button class="btn primary" type="submit">Iniciar sesión</button>
+      <button class="btn primary" type="submit">Iniciar sesión</button>
         <p class="form-note" id="loginNote" role="status"></p>
       </form>
     </dialog>
 
     <dialog class="land-modal" id="landDetailModal">
       <div class="land-detail" id="landDetailContent"></div>
+    </dialog>
+
+    <dialog class="image-modal" id="imageModal">
+      <button class="land-detail-close image-modal-close" type="button" id="closeImageModal" aria-label="Cerrar">×</button>
+      <img id="imageModalPhoto" alt="Imagen ampliada del terreno" />
     </dialog>
 
     <footer>

@@ -85,3 +85,13 @@ export function normalizeLand(input, current = {}) {
     image,
   };
 }
+
+export function normalizeClient(input) {
+  return {
+    name: String(input.name || "").trim(),
+    phone: String(input.phone || "").trim(),
+    topic: String(input.topic || "").trim(),
+    message: String(input.message || "").trim(),
+    source: String(input.source || "Formulario de contacto").trim(),
+  };
+}

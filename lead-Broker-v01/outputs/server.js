@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const root = __dirname;
 const dataDir = path.join(root, "data");
 const dbPath = path.join(dataDir, "lands.json");
+const clientsDbPath = path.join(dataDir, "clients.json");
 const port = Number(process.env.PORT || 4174);
 const host = process.env.HOST || "0.0.0.0";
 const adminPassword = process.env.ADMIN_PASSWORD || "agustina2026";
@@ -72,6 +73,9 @@ function ensureDb() {
   if (!fs.existsSync(dbPath)) {
     fs.writeFileSync(dbPath, JSON.stringify(defaultLands, null, 2));
   }
+  if (!fs.existsSync(clientsDbPath)) {
+    fs.writeFileSync(clientsDbPath, JSON.stringify([], null, 2));
+  }
 }
 
 function readLands() {
@@ -87,6 +91,21 @@ function readLands() {
 function writeLands(lands) {
   ensureDb();
   fs.writeFileSync(dbPath, JSON.stringify(lands, null, 2));
+}
+
+function readClients() {
+  ensureDb();
+  try {
+    const parsed = JSON.parse(fs.readFileSync(clientsDbPath, "utf8"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeClients(clients) {
+  ensureDb();
+  fs.writeFileSync(clientsDbPath, JSON.stringify(clients, null, 2));
 }
 
 function sendJson(res, status, payload) {
@@ -174,9 +193,43 @@ function cleanLand(input, current = {}) {
   };
 }
 
+function cleanClient(input) {
+  return {
+    id: input.id || `client-${Date.now()}`,
+    name: String(input.name || "").trim(),
+    phone: String(input.phone || "").trim(),
+    topic: String(input.topic || "").trim(),
+    message: String(input.message || "").trim(),
+    source: String(input.source || "Formulario de contacto").trim(),
+    created_at: input.created_at || new Date().toISOString(),
+  };
+}
+
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/lands") {
     sendJson(res, 200, { lands: readLands() });
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/clients") {
+    if (!requireAdmin(req, res)) return;
+    sendJson(res, 200, { clients: readClients() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/clients") {
+    const body = await readBody(req);
+    const clients = readClients();
+    const client = cleanClient(body);
+
+    if (!client.name || !client.phone || !client.topic || !client.message) {
+      sendJson(res, 400, { error: "Faltan datos del cliente." });
+      return;
+    }
+
+    clients.unshift(client);
+    writeClients(clients);
+    sendJson(res, 201, { ok: true });
     return;
   }
 

@@ -1,11 +1,13 @@
 const phoneNumber = "59892420997";
 const baseMessage = "Hola Agustina, quiero consultar por Lead Brokers.";
 const landsStorageKey = "lead-brokers-lands-fallback";
+const clientsStorageKey = "lead-brokers-clients-fallback";
 const adminTokenKey = "lead-brokers-admin-token";
 const fallbackPassword = "agustina2026";
 
 let apiOnline = true;
 let landsCache = [];
+let clientsCache = [];
 
 const properties = [
   {
@@ -129,6 +131,12 @@ function setWhatsappLinks() {
   });
 }
 
+function landShareUrl(land) {
+  const url = new URL(window.location.href);
+  url.hash = `terreno-${land.id}`;
+  return url.toString();
+}
+
 function renderProperties(filter = "all") {
   const list = document.getElementById("propertyList");
   if (!list) return;
@@ -208,6 +216,22 @@ function saveFallbackLands(lands) {
   localStorage.setItem(landsStorageKey, JSON.stringify(lands));
 }
 
+function loadFallbackClients() {
+  const saved = localStorage.getItem(clientsStorageKey);
+  if (!saved) return [];
+
+  try {
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFallbackClients(clients) {
+  localStorage.setItem(clientsStorageKey, JSON.stringify(clients));
+}
+
 async function loadLands() {
   if (apiOnline) {
     try {
@@ -221,6 +245,39 @@ async function loadLands() {
 
   landsCache = loadFallbackLands();
   return landsCache;
+}
+
+async function loadClients() {
+  if (apiOnline) {
+    try {
+      const payload = await apiRequest("/api/clients");
+      clientsCache = payload.clients || [];
+      return clientsCache;
+    } catch {
+      clientsCache = loadFallbackClients();
+      return clientsCache;
+    }
+  }
+
+  clientsCache = loadFallbackClients();
+  return clientsCache;
+}
+
+async function saveClient(client) {
+  if (apiOnline) {
+    const payload = await apiRequest("/api/clients", {
+      method: "POST",
+      body: JSON.stringify(client),
+    });
+    clientsCache = payload.clients || clientsCache;
+    return clientsCache;
+  }
+
+  const clients = loadFallbackClients();
+  clients.unshift({ ...client, id: `client-${Date.now()}`, created_at: new Date().toISOString() });
+  saveFallbackClients(clients);
+  clientsCache = clients;
+  return clientsCache;
 }
 
 async function loginAdmin(password) {
@@ -368,7 +425,7 @@ function galleryItem(image, land, className, index = 0) {
   const isThumb = className.includes("thumb");
   const attributes = isThumb
     ? `role="button" tabindex="0" data-gallery-index="${index}"`
-    : `data-gallery-main`;
+    : `role="button" tabindex="0" data-gallery-main data-open-image`;
   const activeClass = isThumb && index === 0 ? " is-active" : "";
 
   return image
@@ -401,6 +458,7 @@ function openLandDetail(id) {
     `Ubicacion: ${land.location}`,
     `Superficie: ${land.size}`,
   ].join("\n");
+  const shareUrl = landShareUrl(land);
 
   content.dataset.gallery = JSON.stringify(galleryImages);
   content.dataset.landTitle = land.title;
@@ -433,7 +491,9 @@ function openLandDetail(id) {
         <strong>${escapeHtml(sellerName)}</strong>
         <p>${escapeHtml(sellerDescription).replaceAll("\n", "<br>")}</p>
         <span class="tag">${escapeHtml(sellerPhone)}</span>
+        <button class="btn ghost" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir ficha</button>
         <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+        <span class="file-helper" data-share-status>Link directo: ${escapeHtml(shareUrl)}</span>
       </aside>
     </div>
   `;
@@ -494,6 +554,7 @@ async function renderLands() {
             <div class="land-actions">
               <button class="view-land" type="button" data-land-id="${escapeHtml(land.id)}">Ver ficha</button>
               <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">WhatsApp</a>
+              <button class="share-land" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir</button>
               <button class="edit-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Editar</button>
               <button class="delete-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Borrar</button>
             </div>
@@ -502,6 +563,11 @@ async function renderLands() {
       `;
     })
     .join("");
+}
+
+function openLandFromHash() {
+  const match = window.location.hash.match(/^#terreno-(.+)$/);
+  if (match) openLandDetail(decodeURIComponent(match[1]));
 }
 
 async function updateAdminUi() {
@@ -522,6 +588,61 @@ async function updateAdminUi() {
   }
 
   await renderLands();
+  await renderClients();
+}
+
+function clientDate(value) {
+  if (!value) return "Sin fecha";
+  try {
+    return new Date(value).toLocaleString("es-UY", { dateStyle: "short", timeStyle: "short" });
+  } catch {
+    return "Sin fecha";
+  }
+}
+
+async function renderClients() {
+  const list = document.getElementById("clientList");
+  if (!list) return;
+
+  if (!isAdminLoggedIn()) {
+    clientsCache = [];
+    list.innerHTML = `<div class="empty-state">Inicia sesion para ver clientes registrados.</div>`;
+    return;
+  }
+
+  const clients = await loadClients();
+  if (!clients.length) {
+    list.innerHTML = `<div class="empty-state">Todavia no hay clientes registrados.</div>`;
+    return;
+  }
+
+  list.innerHTML = clients
+    .map(
+      (client) => `
+        <article class="client-card">
+          <div>
+            <strong>${escapeHtml(client.name)}</strong>
+            <span>${escapeHtml(clientDate(client.created_at))}</span>
+          </div>
+          <p>${escapeHtml(client.topic)}</p>
+          <p>${escapeHtml(client.message)}</p>
+          <a class="btn ghost" href="${whatsappUrl(`Hola, ${client.name}. Te escribo por tu consulta: ${client.topic}`)}" target="_blank" rel="noopener">${escapeHtml(client.phone)}</a>
+        </article>
+      `
+    )
+    .join("");
+}
+
+async function shareLand(id) {
+  const land = landsCache.find((item) => item.id === id);
+  if (!land) return;
+
+  const text = `${land.title} - ${displayPrice(land)}\n${landShareUrl(land)}`;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    window.prompt("Copiar link del terreno:", text);
+  }
 }
 
 function resetLandForm() {
@@ -660,6 +781,13 @@ function setupLandManager() {
       return;
     }
 
+    const shareButton = event.target.closest("[data-share-land-id]");
+    if (shareButton) {
+      await shareLand(shareButton.dataset.shareLandId);
+      if (note) note.textContent = "Link del terreno copiado para compartir.";
+      return;
+    }
+
     if (!isAdminLoggedIn()) return;
 
     const editButton = event.target.closest(".edit-land");
@@ -745,6 +873,11 @@ function setupLandManager() {
       if (submitButton) submitButton.disabled = false;
     }
   });
+
+  const refreshClients = document.getElementById("refreshClients");
+  if (refreshClients) {
+    refreshClients.addEventListener("click", renderClients);
+  }
 }
 
 function setupLandDetailModal() {
@@ -752,9 +885,23 @@ function setupLandDetailModal() {
   const content = document.getElementById("landDetailContent");
   if (!modal || !content) return;
 
-  content.addEventListener("click", (event) => {
+  content.addEventListener("click", async (event) => {
     if (event.target.closest("[data-close-detail]")) {
       modal.close();
+      return;
+    }
+
+    const shareButton = event.target.closest("[data-share-land-id]");
+    if (shareButton) {
+      await shareLand(shareButton.dataset.shareLandId);
+      const helper = content.querySelector("[data-share-status]");
+      if (helper) helper.textContent = "Link copiado para compartir.";
+      return;
+    }
+
+    const mainImage = event.target.closest("[data-open-image]");
+    if (mainImage) {
+      openImageModal(mainImage.querySelector("img")?.src || "");
       return;
     }
 
@@ -773,6 +920,33 @@ function setupLandDetailModal() {
     event.preventDefault();
     selectGalleryImage(content, thumb);
   });
+}
+
+function setupImageModal() {
+  const modal = document.getElementById("imageModal");
+  const close = document.getElementById("closeImageModal");
+  if (!modal) return;
+
+  if (close) {
+    close.addEventListener("click", () => modal.close());
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.close();
+  });
+}
+
+function openImageModal(image) {
+  const modal = document.getElementById("imageModal");
+  const photo = document.getElementById("imageModalPhoto");
+  if (!modal || !photo || !isImageSource(image)) return;
+
+  photo.src = image;
+  if (typeof modal.showModal === "function") {
+    modal.showModal();
+  } else {
+    modal.setAttribute("open", "");
+  }
 }
 
 function setupFooterYear() {
@@ -871,18 +1045,32 @@ function setupForm() {
   const note = document.getElementById("formNote");
   if (!form || !note) return;
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
+    const client = {
+      name: data.get("name"),
+      phone: data.get("phone"),
+      topic: data.get("topic"),
+      message: data.get("message"),
+      source: "Formulario de contacto",
+    };
     const message = [
       "Hola Agustina, quiero consultar por Lead Brokers.",
-      `Nombre: ${data.get("name")}`,
-      `Telefono: ${data.get("phone")}`,
-      `Consulta: ${data.get("topic")}`,
-      `Detalle: ${data.get("message")}`,
+      `Nombre: ${client.name}`,
+      `Telefono: ${client.phone}`,
+      `Consulta: ${client.topic}`,
+      `Detalle: ${client.message}`,
     ].join("\n");
 
-    note.textContent = "Mensaje listo. Se abrira WhatsApp para enviarlo.";
+    try {
+      await saveClient(client);
+      note.textContent = "Cliente registrado. Se abrira WhatsApp para enviarlo.";
+      await renderClients();
+    } catch (error) {
+      note.textContent = "Se abrira WhatsApp. Para guardar clientes, ejecuta el SQL de clientes en Supabase.";
+    }
+
     window.open(whatsappUrl(message), "_blank", "noopener");
   });
 }
@@ -896,10 +1084,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupLogin();
   setupLandManager();
   setupLandDetailModal();
+  setupImageModal();
   await updateAdminUi();
+  openLandFromHash();
 
   const filter = document.getElementById("propertyFilter");
   if (filter) {
     filter.addEventListener("change", (event) => renderProperties(event.target.value));
   }
 });
+
+window.addEventListener("hashchange", openLandFromHash);

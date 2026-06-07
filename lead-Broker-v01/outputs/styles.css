@@ -304,6 +304,7 @@ h3 {
 .property-tool,
 .land-card,
 .admin-form,
+.client-panel,
 .timeline article,
 .contact-form {
   border: 1px solid var(--line);
@@ -463,6 +464,7 @@ textarea {
   color: var(--muted);
   font-size: 0.86rem;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .land-grid {
@@ -536,12 +538,13 @@ textarea {
 
 .land-actions {
   display: grid;
-  grid-template-columns: 1fr auto auto auto;
+  grid-template-columns: 1fr auto auto auto auto;
   gap: 0.6rem;
   align-items: center;
   margin-top: 0.25rem;
 }
 
+.share-land,
 .delete-land {
   min-height: 3rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -551,6 +554,10 @@ textarea {
   cursor: pointer;
   font-weight: 900;
   padding: 0 0.8rem;
+}
+
+.share-land {
+  color: var(--gold-soft);
 }
 
 .edit-land {
@@ -595,6 +602,44 @@ textarea {
   gap: 1rem;
   margin-top: 1.2rem;
   padding: 1.2rem;
+}
+
+.client-panel {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding: 1.2rem;
+}
+
+.client-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.client-card {
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 0.9rem;
+}
+
+.client-card div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.client-card strong {
+  color: var(--gold-soft);
+}
+
+.client-card span,
+.client-card p {
+  margin: 0;
+  color: var(--muted);
 }
 
 .admin-form.is-hidden {
@@ -720,7 +765,8 @@ textarea {
 }
 
 .login-modal,
-.land-modal {
+.land-modal,
+.image-modal {
   width: min(92vw, 27rem);
   border: 1px solid var(--line);
   border-radius: 0.55rem;
@@ -735,10 +781,31 @@ textarea {
   max-height: 90vh;
 }
 
+.image-modal {
+  width: min(96vw, 78rem);
+  max-height: 94vh;
+  background: #020504;
+}
+
 .login-modal::backdrop,
-.land-modal::backdrop {
+.land-modal::backdrop,
+.image-modal::backdrop {
   background: rgba(0, 0, 0, 0.62);
   backdrop-filter: blur(5px);
+}
+
+.image-modal img {
+  display: block;
+  width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
 }
 
 .land-detail {
@@ -788,6 +855,7 @@ textarea {
 
 .land-gallery-main {
   min-height: 22rem;
+  cursor: zoom-in;
 }
 
 .land-gallery-main img,
@@ -975,6 +1043,7 @@ footer a {
   .land-grid,
   .form-grid,
   .price-field,
+  .client-list,
   .land-gallery,
   .land-detail-grid,
   .timeline,
