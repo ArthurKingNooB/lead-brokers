@@ -21,6 +21,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 80% 4%, rgba(213, 167, 100, 0.18), transparent 28rem),
     radial-gradient(circle at 8% 22%, rgba(33, 166, 110, 0.12), transparent 22rem),
@@ -219,6 +220,7 @@ h3 {
   border-radius: 0.5rem;
   padding: 0.8rem 1.15rem;
   font-weight: 900;
+  text-align: center;
 }
 
 .btn.primary {
@@ -1030,8 +1032,28 @@ footer a {
 }
 
 @media (max-width: 760px) {
+  body {
+    background:
+      radial-gradient(circle at 80% 0%, rgba(213, 167, 100, 0.12), transparent 16rem),
+      var(--bg);
+  }
+
+  .site-header {
+    gap: 0.7rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .brand {
+    gap: 0.55rem;
+  }
+
+  .brand small {
+    font-size: 0.82rem;
+  }
+
   .nav-toggle {
     display: block;
+    flex: 0 0 auto;
   }
 
   .site-nav {
@@ -1046,19 +1068,54 @@ footer a {
     border: 1px solid var(--line);
     border-radius: 0.5rem;
     background: #07100f;
+    box-shadow: var(--shadow);
   }
 
   .site-nav.is-open {
     display: flex;
   }
 
-  .site-nav a {
+  .site-nav a,
+  .login-button {
     border-radius: 0.4rem;
+    padding: 0.9rem;
   }
 
   .login-button {
-    border-radius: 0.4rem;
     text-align: left;
+  }
+
+  .hero {
+    gap: 1.6rem;
+    padding: 2rem 1rem 1.5rem;
+  }
+
+  h1 {
+    max-width: 11ch;
+    font-size: clamp(2.35rem, 13vw, 3.8rem);
+    line-height: 0.96;
+  }
+
+  h2 {
+    font-size: clamp(1.9rem, 10vw, 2.6rem);
+    line-height: 1.04;
+  }
+
+  .hero-copy,
+  .section-heading p,
+  .split p,
+  .provider-band p,
+  .contact-section p {
+    font-size: 1rem;
+  }
+
+  .hero-visual {
+    max-width: 30rem;
+    margin-inline: auto;
+  }
+
+  .section {
+    padding: 3rem 1rem;
   }
 
   .hero-stats,
@@ -1076,12 +1133,49 @@ footer a {
   }
 
   .land-toolbar,
-  .land-actions,
   .admin-form-head,
   .admin-actions {
     align-items: stretch;
     grid-template-columns: 1fr;
     flex-direction: column;
+  }
+
+  .land-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .land-actions .view-land {
+    grid-column: 1 / -1;
+  }
+
+  .land-actions .btn,
+  .land-actions button {
+    min-width: 0;
+    padding-inline: 0.65rem;
+  }
+
+  .land-card,
+  .service-card,
+  .property-tool,
+  .admin-form,
+  .client-panel,
+  .timeline article,
+  .contact-form {
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+  }
+
+  .land-image,
+  .land-image img,
+  .land-image svg {
+    min-height: 12.5rem;
+    height: 12.5rem;
+  }
+
+  .client-card div,
+  .client-actions {
+    align-items: stretch;
+    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .property-item {
@@ -1096,16 +1190,77 @@ footer a {
   footer {
     flex-direction: column;
   }
+
+  .land-modal {
+    width: 100vw;
+    max-width: none;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .land-detail {
+    max-height: 100dvh;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .land-detail-head {
+    align-items: start;
+  }
+
+  .land-gallery-main,
+  .land-gallery-main img,
+  .land-gallery-main svg {
+    min-height: 16rem;
+  }
+
+  .land-gallery-thumbs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .land-gallery-thumb,
+  .land-gallery-thumb img,
+  .land-gallery-thumb svg {
+    min-height: 7.8rem;
+  }
+
+  .image-modal {
+    width: 100vw;
+    max-width: none;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .image-modal img {
+    max-height: 100dvh;
+  }
+
+  .floating-whatsapp {
+    right: 0.85rem;
+    bottom: 0.85rem;
+    width: 3.25rem;
+    height: 3.25rem;
+  }
 }
 
 @media (max-width: 430px) {
+  .site-header {
+    padding-inline: 0.75rem;
+  }
+
+  .brand {
+    max-width: calc(100vw - 5rem);
+  }
+
   .brand strong {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
+    line-height: 1.1;
   }
 
   .brand-mark {
-    width: 2.55rem;
-    height: 2.55rem;
+    width: 2.45rem;
+    height: 2.45rem;
+    font-size: 1rem;
   }
 
   .hero-actions,
@@ -1120,5 +1275,38 @@ footer a {
 
   .tool-top select {
     max-width: none;
+  }
+
+  .hero-stats div,
+  .service-card,
+  .land-body,
+  .admin-form,
+  .client-panel,
+  .contact-form,
+  .land-detail-panel {
+    padding: 0.9rem;
+  }
+
+  .land-actions {
+    gap: 0.5rem;
+  }
+
+  .land-actions .btn,
+  .land-actions button {
+    min-height: 2.85rem;
+    font-size: 0.92rem;
+  }
+
+  .land-meta span,
+  .tag {
+    white-space: normal;
+  }
+
+  .land-gallery-thumbs {
+    grid-template-columns: 1fr;
+  }
+
+  footer {
+    font-size: 0.92rem;
   }
 }
