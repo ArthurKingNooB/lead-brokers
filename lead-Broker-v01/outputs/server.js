@@ -233,6 +233,16 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  const clientMatch = url.pathname.match(/^\/api\/clients\/([^/]+)$/);
+  if (clientMatch && req.method === "DELETE") {
+    if (!requireAdmin(req, res)) return;
+    const id = decodeURIComponent(clientMatch[1]);
+    const clients = readClients().filter((client) => client.id !== id);
+    writeClients(clients);
+    sendJson(res, 200, { clients });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/login") {
     const body = await readBody(req);
     if (body.password !== adminPassword) {

@@ -280,6 +280,19 @@ async function saveClient(client) {
   return clientsCache;
 }
 
+async function deleteClient(id) {
+  if (apiOnline) {
+    const payload = await apiRequest(`/api/clients/${encodeURIComponent(id)}`, { method: "DELETE" });
+    clientsCache = payload.clients || [];
+    return clientsCache;
+  }
+
+  const clients = loadFallbackClients().filter((client) => client.id !== id);
+  saveFallbackClients(clients);
+  clientsCache = clients;
+  return clientsCache;
+}
+
 async function loginAdmin(password) {
   if (apiOnline) {
     try {
@@ -626,7 +639,10 @@ async function renderClients() {
           </div>
           <p>${escapeHtml(client.topic)}</p>
           <p>${escapeHtml(client.message)}</p>
-          <a class="btn ghost" href="${whatsappUrl(`Hola, ${client.name}. Te escribo por tu consulta: ${client.topic}`)}" target="_blank" rel="noopener">${escapeHtml(client.phone)}</a>
+          <div class="client-actions">
+            <a class="btn ghost" href="${whatsappUrl(`Hola, ${client.name}. Te escribo por tu consulta: ${client.topic}`)}" target="_blank" rel="noopener">${escapeHtml(client.phone)}</a>
+            <button class="client-done" type="button" data-client-id="${escapeHtml(client.id)}">Listo</button>
+          </div>
         </article>
       `
     )
@@ -877,6 +893,19 @@ function setupLandManager() {
   const refreshClients = document.getElementById("refreshClients");
   if (refreshClients) {
     refreshClients.addEventListener("click", renderClients);
+  }
+
+  const clientList = document.getElementById("clientList");
+  if (clientList) {
+    clientList.addEventListener("click", async (event) => {
+      const doneButton = event.target.closest("[data-client-id]");
+      if (!doneButton || !isAdminLoggedIn()) return;
+
+      doneButton.disabled = true;
+      doneButton.textContent = "Guardando...";
+      await deleteClient(doneButton.dataset.clientId);
+      await renderClients();
+    });
   }
 }
 
