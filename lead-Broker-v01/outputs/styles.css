@@ -767,9 +767,17 @@ textarea {
 }
 
 .form-note {
+  display: grid;
+  gap: 0.75rem;
   min-height: 1.5rem;
   margin: 0;
   color: var(--muted);
+}
+
+.form-note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .floating-whatsapp {

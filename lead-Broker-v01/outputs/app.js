@@ -637,6 +637,10 @@ function clientFollowUpMessage(client) {
     return `Hola, ${name}. Te escribo por tu consulta. Contame un poco más sobre la operación o contrato que querés cerrar, así vemos cómo ayudarte.`;
   }
 
+  if (topic.includes("dame más info") || topic.includes("dame mas info")) {
+    return `Hola, ${name}. Te escribo por tu consulta. Vi que querés más información. Contame un poquito qué estás buscando y te oriento.`;
+  }
+
   return `Hola, ${name}. Te escribo por tu consulta. Contame bien qué necesitás y cómo te puedo ayudar.`;
 }
 
@@ -967,6 +971,10 @@ function setupLandDetailModal() {
     }
   });
 
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.close();
+  });
+
   content.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
 
@@ -1104,30 +1112,47 @@ function setupForm() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
+    const detail = String(data.get("message") || "").trim() || "Dame más info";
     const client = {
       name: data.get("name"),
       phone: data.get("phone"),
       topic: data.get("topic"),
-      message: data.get("message"),
+      message: detail,
       source: "Formulario de contacto",
     };
     const message = [
       "Hola Agustina, quiero consultar por Lead Brokers.",
       `Nombre: ${client.name}`,
-      `Telefono: ${client.phone}`,
-      `Consulta: ${client.topic}`,
-      `Detalle: ${client.message}`,
+      `Motivo: ${client.topic}`,
+      `Detalle: ${detail}`,
     ].join("\n");
+    const whatsappLink = whatsappUrl(message);
 
     try {
       await saveClient(client);
-      note.textContent = "Cliente registrado. Se abrira WhatsApp para enviarlo.";
+      note.innerHTML = `
+        <span>Consulta registrada. Podés enviar WhatsApp ahora o quedar en espera.</span>
+        <span class="form-note-actions">
+          <a class="btn primary" href="${whatsappLink}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+          <button class="btn ghost" type="button" data-wait-contact>Quedar en espera</button>
+        </span>
+      `;
       await renderClients();
     } catch (error) {
-      note.textContent = "Se abrira WhatsApp. Para guardar clientes, ejecuta el SQL de clientes en Supabase.";
+      note.innerHTML = `
+        <span>No se pudo registrar en la base. Igual podés enviar WhatsApp.</span>
+        <span class="form-note-actions">
+          <a class="btn primary" href="${whatsappLink}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+        </span>
+      `;
     }
+  });
 
-    window.open(whatsappUrl(message), "_blank", "noopener");
+  note.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-wait-contact]")) return;
+
+    note.textContent = "Perfecto, quedaste registrado. Agustina te contacta cuando pueda.";
+    form.reset();
   });
 }
 
