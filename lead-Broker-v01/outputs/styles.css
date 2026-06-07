@@ -540,14 +540,18 @@ textarea {
 
 .land-actions {
   display: grid;
-  grid-template-columns: 1fr auto auto auto auto;
+  grid-template-columns: repeat(auto-fit, minmax(6.2rem, 1fr));
   gap: 0.6rem;
   align-items: center;
   margin-top: 0.25rem;
 }
 
+.map-land,
 .share-land,
 .delete-land {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 3rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.5rem;
@@ -558,6 +562,7 @@ textarea {
   padding: 0 0.8rem;
 }
 
+.map-land,
 .share-land {
   color: var(--gold-soft);
 }

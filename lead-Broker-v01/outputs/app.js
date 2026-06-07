@@ -50,6 +50,7 @@ const defaultLands = [
     seller_description: "Intermediaria comercial de Lead Brokers. Coordina consultas, visitas y seguimiento hasta el cierre.",
     gallery: [],
     image: "",
+    map_url: "",
   },
   {
     id: "land-2",
@@ -64,6 +65,7 @@ const defaultLands = [
     seller_description: "Lead Brokers acompana la conexion entre vendedor e interesados calificados.",
     gallery: [],
     image: "",
+    map_url: "",
   },
   {
     id: "land-3",
@@ -78,6 +80,7 @@ const defaultLands = [
     seller_description: "Gestion comercial con foco en transparencia, contacto directo y cierre ordenado.",
     gallery: [],
     image: "",
+    map_url: "",
   },
 ];
 
@@ -135,6 +138,14 @@ function landShareUrl(land) {
   const url = new URL(window.location.href);
   url.hash = `terreno-${land.id}`;
   return url.toString();
+}
+
+function landMapUrl(land) {
+  const rawUrl = String(land.map_url || land.mapUrl || "").trim();
+  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) return rawUrl;
+
+  const query = [land.location, land.title].filter(Boolean).join(" ");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query || "terreno")}`;
 }
 
 function renderProperties(filter = "all") {
@@ -470,8 +481,10 @@ function openLandDetail(id) {
     `Precio: ${landPrice}`,
     `Ubicacion: ${land.location}`,
     `Superficie: ${land.size}`,
+    `Mapa: ${landMapUrl(land)}`,
   ].join("\n");
   const shareUrl = landShareUrl(land);
+  const mapUrl = landMapUrl(land);
 
   content.dataset.gallery = JSON.stringify(galleryImages);
   content.dataset.landTitle = land.title;
@@ -504,6 +517,7 @@ function openLandDetail(id) {
         <strong>${escapeHtml(sellerName)}</strong>
         <p>${escapeHtml(sellerDescription).replaceAll("\n", "<br>")}</p>
         <span class="tag">${escapeHtml(sellerPhone)}</span>
+        <a class="btn ghost" href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener">Ver en Google Maps</a>
         <button class="btn ghost" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir ficha</button>
         <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">Consultar por WhatsApp</a>
         <span class="file-helper" data-share-status>Link directo: ${escapeHtml(shareUrl)}</span>
@@ -547,7 +561,9 @@ async function renderLands() {
         `Precio: ${landPrice}`,
         `Ubicacion: ${land.location}`,
         `Superficie: ${land.size}`,
+        `Mapa: ${landMapUrl(land)}`,
       ].join("\n");
+      const mapUrl = landMapUrl(land);
 
       return `
         <article class="land-card">
@@ -567,6 +583,7 @@ async function renderLands() {
             <div class="land-actions">
               <button class="view-land" type="button" data-land-id="${escapeHtml(land.id)}">Ver ficha</button>
               <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">WhatsApp</a>
+              <a class="map-land" href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener">Mapa</a>
               <button class="share-land" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir</button>
               <button class="edit-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Editar</button>
               <button class="delete-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Borrar</button>
@@ -853,6 +870,7 @@ function setupLandManager() {
       form.elements.priceCurrency.value = land.priceCurrency || parsedPrice.currency;
       form.elements.priceAmount.value = formatThousands(land.priceAmount || parsedPrice.amount);
       form.elements.location.value = land.location;
+      form.elements.mapUrl.value = land.map_url || land.mapUrl || "";
       form.elements.size.value = formatSize(parseSize(land.size));
       form.elements.description.value = land.description;
       form.elements.longDescription.value = land.long_description || land.longDescription || "";
@@ -898,6 +916,7 @@ function setupLandManager() {
         title: data.get("title"),
         price: formatPrice(currency, amount),
         location: data.get("location"),
+        map_url: data.get("mapUrl"),
         size: formatSize(data.get("size")),
         description: data.get("description"),
         long_description: data.get("longDescription"),

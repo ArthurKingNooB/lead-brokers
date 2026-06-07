@@ -3,6 +3,7 @@ create table if not exists public.lands (
   title text not null,
   price text not null,
   location text not null,
+  map_url text default '',
   size text not null,
   description text not null,
   long_description text default '',
@@ -29,6 +30,7 @@ alter table public.lands add column if not exists seller_name text default '';
 alter table public.lands add column if not exists seller_phone text default '';
 alter table public.lands add column if not exists seller_description text default '';
 alter table public.lands add column if not exists gallery jsonb not null default '[]'::jsonb;
+alter table public.lands add column if not exists map_url text default '';
 
 alter table public.lands enable row level security;
 alter table public.clients enable row level security;
@@ -51,6 +53,7 @@ insert into public.lands (
   title,
   price,
   location,
+  map_url,
   size,
   description,
   long_description,
@@ -67,6 +70,7 @@ from (
       'Terreno urbano con servicios',
       'USD 32.000',
       'Zona residencial',
+      '',
       '420 m2',
       'Lote parejo, buen acceso, luz y agua disponibles. Ideal para vivienda o inversion.',
       'Lote parejo con buen acceso, servicios disponibles y entorno residencial. Ideal para vivienda familiar o inversion a mediano plazo.',
@@ -80,6 +84,7 @@ from (
       'Lote amplio para desarrollo',
       'USD 58.000',
       'A metros de ruta principal',
+      '',
       '900 m2',
       'Excelente frente, entorno en crecimiento y potencial para proyecto comercial.',
       'Terreno amplio con frente destacado, buena exposicion y acceso rapido. Recomendado para desarrollo, deposito, local o inversion comercial.',
@@ -93,6 +98,7 @@ from (
       'Terreno listo para escriturar',
       'Consultar',
       'Barrio tranquilo',
+      '',
       '510 m2',
       'Documentacion ordenada, zona con buena demanda y consultas activas.',
       'Terreno en barrio tranquilo con documentacion ordenada. Buena opcion para quienes buscan avanzar con una operacion clara y acompanada.',
@@ -102,5 +108,5 @@ from (
       '[]'::jsonb,
       ''
     )
-) as seed(title, price, location, size, description, long_description, seller_name, seller_phone, seller_description, gallery, image)
+) as seed(title, price, location, map_url, size, description, long_description, seller_name, seller_phone, seller_description, gallery, image)
 where not exists (select 1 from public.lands);

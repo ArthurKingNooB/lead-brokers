@@ -75,6 +75,7 @@ export function normalizeLand(input, current = {}) {
     title: String(valueOrCurrent(input, "title", current) || "").trim(),
     price: String(valueOrCurrent(input, "price", current) || "").trim(),
     location: String(valueOrCurrent(input, "location", current) || "").trim(),
+    map_url: String(valueOrCurrent(input, "map_url", current) || "").trim(),
     size: String(valueOrCurrent(input, "size", current) || "").trim(),
     description: String(valueOrCurrent(input, "description", current) || "").trim(),
     long_description: String(valueOrCurrent(input, "long_description", current) || "").trim(),

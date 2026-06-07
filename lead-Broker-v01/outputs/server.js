@@ -26,6 +26,7 @@ const defaultLands = [
     seller_description: "Intermediaria comercial de Lead Brokers. Coordina consultas, visitas y seguimiento hasta el cierre.",
     gallery: [],
     image: "",
+    map_url: "",
   },
   {
     id: "land-2",
@@ -40,6 +41,7 @@ const defaultLands = [
     seller_description: "Lead Brokers acompana la conexion entre vendedor e interesados calificados.",
     gallery: [],
     image: "",
+    map_url: "",
   },
   {
     id: "land-3",
@@ -54,6 +56,7 @@ const defaultLands = [
     seller_description: "Gestion comercial con foco en transparencia, contacto directo y cierre ordenado.",
     gallery: [],
     image: "",
+    map_url: "",
   },
 ];
 
@@ -182,6 +185,7 @@ function cleanLand(input, current = {}) {
     title: String(valueOrCurrent(input, "title", current) || "").trim(),
     price: String(valueOrCurrent(input, "price", current) || "").trim(),
     location: String(valueOrCurrent(input, "location", current) || "").trim(),
+    map_url: String(valueOrCurrent(input, "map_url", current) || "").trim(),
     size: String(valueOrCurrent(input, "size", current) || "").trim(),
     description: String(valueOrCurrent(input, "description", current) || "").trim(),
     long_description: String(valueOrCurrent(input, "long_description", current) || "").trim(),
