@@ -203,6 +203,7 @@
         <div class="admin-tabs admin-only is-hidden" id="adminTabs" role="tablist" aria-label="Panel de Agustina">
           <button class="admin-tab is-active" type="button" data-admin-tab="lands">Terrenos</button>
           <button class="admin-tab" type="button" data-admin-tab="clients">Clientes</button>
+          <button class="admin-tab" type="button" data-admin-tab="stats">Estadísticas</button>
           <button class="admin-tab" type="button" data-admin-tab="settings">Configuracion</button>
         </div>
 
@@ -316,6 +317,19 @@
           <button class="btn primary" id="landSubmitButton" type="submit">Publicar terreno</button>
           <p class="form-note" id="landNote" role="status"></p>
         </form>
+        </section>
+
+        <section class="admin-section" data-admin-section="stats">
+          <div class="stats-panel admin-only is-hidden" id="statsPanel">
+            <div class="admin-form-head">
+              <div>
+                <p class="eyebrow">Resumen rápido</p>
+                <h3>Estadísticas del panel</h3>
+              </div>
+              <button class="btn ghost" type="button" id="refreshStats">Actualizar</button>
+            </div>
+            <div class="stats-grid" id="statsGrid" aria-live="polite"></div>
+          </div>
         </section>
 
         <section class="admin-section" data-admin-section="settings">
@@ -457,7 +471,10 @@
 
     <dialog class="image-modal" id="imageModal">
       <button class="land-detail-close image-modal-close" type="button" id="closeImageModal" aria-label="Cerrar">×</button>
+      <button class="gallery-arrow image-arrow prev" type="button" id="imagePrev" aria-label="Imagen anterior">‹</button>
       <img id="imageModalPhoto" alt="Imagen ampliada del terreno" />
+      <button class="gallery-arrow image-arrow next" type="button" id="imageNext" aria-label="Imagen siguiente">›</button>
+      <span class="gallery-counter image-counter" id="imageCounter">1 / 1</span>
     </dialog>
 
     <footer>

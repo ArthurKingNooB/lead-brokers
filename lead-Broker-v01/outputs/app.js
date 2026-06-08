@@ -12,6 +12,8 @@ let clientsCache = [];
 let removedImageUrls = new Set();
 let imageManagerItems = [];
 let activeAdminTab = "lands";
+let imageModalImages = [];
+let imageModalIndex = 0;
 
 const landStatuses = {
   available: { label: "Disponible", className: "available" },
@@ -160,6 +162,17 @@ function landDateLabel(land = {}) {
   if (updated) return `Actualizado ${updated}`;
   if (created) return `Publicado ${created}`;
   return "Publicado recientemente";
+}
+
+function landVisitMessage(land, landPrice = displayPrice(land)) {
+  return [
+    "Hola Agustina, quiero agendar una visita por este terreno.",
+    `Terreno: ${land.title}`,
+    `Precio: ${landPrice}`,
+    `Ubicacion: ${land.location}`,
+    `Superficie: ${land.size}`,
+    `Mapa: ${landMapUrl(land)}`,
+  ].join("\n");
 }
 
 function setWhatsappLinks() {
@@ -537,6 +550,7 @@ function openLandDetail(id) {
   ].join("\n");
   const shareUrl = landShareUrl(land);
   const mapUrl = landMapUrl(land);
+  const visitMessage = landVisitMessage(land, landPrice);
 
   content.dataset.gallery = JSON.stringify(galleryImages);
   content.dataset.landTitle = land.title;
@@ -579,6 +593,7 @@ function openLandDetail(id) {
         <span class="tag">${escapeHtml(sellerPhone)}</span>
         <a class="btn ghost" href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener">Ver en Google Maps</a>
         <button class="btn ghost" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir ficha</button>
+        <a class="btn ghost" href="${whatsappUrl(visitMessage)}" target="_blank" rel="noopener">Agendar visita</a>
         <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">Consultar por WhatsApp</a>
         <span class="file-helper" data-share-status>Link directo: ${escapeHtml(shareUrl)}</span>
       </aside>
@@ -626,6 +641,7 @@ async function renderLands() {
         `Mapa: ${landMapUrl(land)}`,
       ].join("\n");
       const mapUrl = landMapUrl(land);
+      const visitMessage = landVisitMessage(land, landPrice);
 
       return `
         <article class="land-card" data-land-card-id="${escapeHtml(land.id)}" tabindex="0" role="button" aria-label="Ver ficha de ${escapeHtml(land.title)}">
@@ -647,6 +663,7 @@ async function renderLands() {
             <div class="land-actions">
               <button class="view-land" type="button" data-land-id="${escapeHtml(land.id)}">Ver ficha</button>
               <a class="btn primary" href="${whatsappUrl(message)}" target="_blank" rel="noopener">WhatsApp</a>
+              <a class="visit-land" href="${whatsappUrl(visitMessage)}" target="_blank" rel="noopener">Visita</a>
               <a class="map-land" href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener">Mapa</a>
               <button class="share-land" type="button" data-share-land-id="${escapeHtml(land.id)}">Compartir</button>
               <button class="edit-land ${admin ? "" : "is-hidden"}" type="button" data-land-id="${escapeHtml(land.id)}">Editar</button>
@@ -684,6 +701,7 @@ async function updateAdminUi() {
   updateAdminSections();
   await renderLands();
   await renderClients();
+  await renderStats();
 }
 
 function updateAdminSections() {
@@ -697,7 +715,7 @@ function updateAdminSections() {
 
   document.querySelectorAll("[data-admin-section]").forEach((section) => {
     const name = section.dataset.adminSection;
-    section.classList.toggle("is-active", name === "lands" || (admin && name === activeAdminTab));
+    section.classList.toggle("is-active", admin ? name === activeAdminTab : name === "lands");
   });
 }
 
@@ -774,6 +792,50 @@ async function renderClients() {
         </article>
       `
     )
+    .join("");
+}
+
+async function renderStats() {
+  const grid = document.getElementById("statsGrid");
+  if (!grid) return;
+
+  if (!isAdminLoggedIn()) {
+    grid.innerHTML = "";
+    return;
+  }
+
+  const lands = landsCache.length ? landsCache : await loadLands();
+  const clients = clientsCache.length ? clientsCache : await loadClients();
+  const byStatus = lands.reduce(
+    (acc, land) => {
+      const key = land.status || "available";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    { available: 0, reserved: 0, sold: 0 }
+  );
+  const lastClient = clients[0];
+  const lastUpdatedLand = lands
+    .filter((land) => land.updated_at || land.created_at)
+    .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))[0];
+
+  const items = [
+    ["Terrenos cargados", lands.length],
+    ["Disponibles", byStatus.available || 0],
+    ["Reservados", byStatus.reserved || 0],
+    ["Vendidos", byStatus.sold || 0],
+    ["Consultas recibidas", clients.length],
+    ["Ultimo cliente", lastClient ? lastClient.name : "Sin consultas"],
+    ["Ultimo movimiento", lastUpdatedLand ? landDateLabel(lastUpdatedLand) : "Sin datos"],
+  ];
+
+  grid.innerHTML = items
+    .map(([label, value]) => `
+      <article class="stat-card">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </article>
+    `)
     .join("");
 }
 
@@ -1065,6 +1127,7 @@ function setupLandManager() {
 
     await deleteLand(deleteButton.dataset.landId);
     await renderLands();
+    await renderStats();
   });
 
   list.addEventListener("keydown", (event) => {
@@ -1129,6 +1192,7 @@ function setupLandManager() {
       resetLandForm();
       form.classList.add("is-hidden");
       await renderLands();
+      await renderStats();
       if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
     } catch (error) {
       if (note) {
@@ -1144,7 +1208,15 @@ function setupLandManager() {
 
   const refreshClients = document.getElementById("refreshClients");
   if (refreshClients) {
-    refreshClients.addEventListener("click", renderClients);
+    refreshClients.addEventListener("click", async () => {
+      await renderClients();
+      await renderStats();
+    });
+  }
+
+  const refreshStats = document.getElementById("refreshStats");
+  if (refreshStats) {
+    refreshStats.addEventListener("click", renderStats);
   }
 
   const clientList = document.getElementById("clientList");
@@ -1157,6 +1229,7 @@ function setupLandManager() {
       doneButton.textContent = "Guardando...";
       await deleteClient(doneButton.dataset.clientId);
       await renderClients();
+      await renderStats();
     });
   }
 }
@@ -1183,7 +1256,7 @@ function setupLandDetailModal() {
 
     const mainImage = event.target.closest("[data-open-image]");
     if (mainImage) {
-      openImageModal(mainImage.querySelector("img")?.src || "");
+      openImageModal(Number(content.dataset.galleryIndex || 0), content);
       return;
     }
 
@@ -1233,28 +1306,80 @@ function setupLandDetailModal() {
 function setupImageModal() {
   const modal = document.getElementById("imageModal");
   const close = document.getElementById("closeImageModal");
+  const prev = document.getElementById("imagePrev");
+  const next = document.getElementById("imageNext");
   if (!modal) return;
 
   if (close) {
     close.addEventListener("click", () => modal.close());
   }
 
+  if (prev) prev.addEventListener("click", () => moveImageModal(-1));
+  if (next) next.addEventListener("click", () => moveImageModal(1));
+
   modal.addEventListener("click", (event) => {
     if (event.target === modal) modal.close();
   });
+
+  modal.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      moveImageModal(-1);
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      moveImageModal(1);
+    }
+  });
 }
 
-function openImageModal(image) {
+function openImageModal(indexOrImage, sourceContent) {
   const modal = document.getElementById("imageModal");
   const photo = document.getElementById("imageModalPhoto");
-  if (!modal || !photo || !isImageSource(image)) return;
+  if (!modal || !photo) return;
 
-  photo.src = image;
+  if (sourceContent) {
+    try {
+      imageModalImages = JSON.parse(sourceContent.dataset.gallery || "[]").filter(isImageSource);
+    } catch (error) {
+      imageModalImages = [];
+    }
+    imageModalIndex = Number(indexOrImage || 0);
+  } else {
+    const image = String(indexOrImage || "");
+    imageModalImages = isImageSource(image) ? [image] : [];
+    imageModalIndex = 0;
+  }
+
+  if (!imageModalImages.length) return;
+
+  updateImageModal();
   if (typeof modal.showModal === "function") {
     modal.showModal();
   } else {
     modal.setAttribute("open", "");
   }
+}
+
+function moveImageModal(direction) {
+  if (!imageModalImages.length) return;
+  imageModalIndex = (imageModalIndex + direction + imageModalImages.length) % imageModalImages.length;
+  updateImageModal();
+}
+
+function updateImageModal() {
+  const photo = document.getElementById("imageModalPhoto");
+  const counter = document.getElementById("imageCounter");
+  const prev = document.getElementById("imagePrev");
+  const next = document.getElementById("imageNext");
+  if (!photo || !imageModalImages.length) return;
+
+  photo.src = imageModalImages[imageModalIndex];
+  if (counter) counter.textContent = `${imageModalIndex + 1} / ${imageModalImages.length}`;
+  [prev, next, counter].forEach((element) => {
+    if (element) element.classList.toggle("is-hidden", imageModalImages.length < 2);
+  });
 }
 
 function setupFooterYear() {

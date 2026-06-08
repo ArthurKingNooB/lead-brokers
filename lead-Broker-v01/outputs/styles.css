@@ -144,6 +144,7 @@ a[href],
 .view-land:focus-visible,
 .edit-land:focus-visible,
 .map-land:focus-visible,
+.visit-land:focus-visible,
 .share-land:focus-visible,
 .delete-land:focus-visible,
 .client-done:focus-visible,
@@ -596,6 +597,42 @@ textarea {
   padding: 1.2rem;
 }
 
+.stats-panel {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1.2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.stat-card {
+  display: grid;
+  gap: 0.35rem;
+  border: 1px solid rgba(240, 215, 164, 0.24);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.stat-card strong {
+  color: var(--gold-soft);
+  font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+  line-height: 1.1;
+}
+
 .land-toolbar label,
 .admin-form label {
   display: grid;
@@ -797,6 +834,7 @@ textarea {
 }
 
 .map-land,
+.visit-land,
 .share-land,
 .delete-land {
   display: inline-flex;
@@ -814,8 +852,15 @@ textarea {
 }
 
 .map-land,
+.visit-land,
 .share-land {
   color: var(--gold-soft);
+}
+
+.visit-land {
+  border-color: rgba(33, 166, 110, 0.4);
+  background: rgba(33, 166, 110, 0.12);
+  color: #bff2d4;
 }
 
 .edit-land {
@@ -1206,11 +1251,31 @@ textarea {
   object-fit: contain;
 }
 
+.image-modal .is-hidden {
+  display: none;
+}
+
 .image-modal-close {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
   z-index: 2;
+}
+
+.image-arrow {
+  z-index: 3;
+}
+
+.image-arrow.prev {
+  left: 1rem;
+}
+
+.image-arrow.next {
+  right: 1rem;
+}
+
+.image-counter {
+  z-index: 3;
 }
 
 .land-detail {
@@ -1418,6 +1483,7 @@ textarea {
   .view-land:hover,
   .edit-land:hover,
   .map-land:hover,
+  .visit-land:hover,
   .share-land:hover,
   .delete-land:hover,
   .client-done:hover,
@@ -1438,6 +1504,7 @@ textarea {
   .login-button:hover,
   .view-land:hover,
   .map-land:hover,
+  .visit-land:hover,
   .share-land:hover,
   .modal-close:hover,
   .land-detail-close:hover,
@@ -1456,6 +1523,7 @@ textarea {
   }
 
   .client-done:hover,
+  .visit-land:hover,
   .floating-whatsapp:hover {
     box-shadow: 0 14px 34px rgba(33, 166, 110, 0.25);
   }
@@ -1509,6 +1577,7 @@ footer a {
 
   .service-grid,
   .land-grid,
+  .stats-grid,
   .timeline {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1615,6 +1684,7 @@ footer a {
   .form-grid,
   .price-field,
   .client-list,
+  .stats-grid,
   .saved-images-grid,
   .land-gallery,
   .land-detail-grid,
@@ -1641,6 +1711,7 @@ footer a {
   }
 
   .land-actions .btn,
+  .land-actions a,
   .land-actions button {
     min-width: 0;
     padding-inline: 0.65rem;
@@ -1796,6 +1867,7 @@ footer a {
   }
 
   .land-actions .btn,
+  .land-actions a,
   .land-actions button {
     min-height: 2.85rem;
     font-size: 0.92rem;
