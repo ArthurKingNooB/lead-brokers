@@ -733,11 +733,14 @@ function showCopiedFeedback(element, label = "Copiado") {
 
   const original = element.textContent;
   element.textContent = label;
+  element.classList.remove("copied-pop");
   element.classList.add("is-copied");
+  void element.offsetWidth;
+  element.classList.add("copied-pop");
 
   window.setTimeout(() => {
     element.textContent = original;
-    element.classList.remove("is-copied");
+    element.classList.remove("is-copied", "copied-pop");
   }, 1800);
 }
 
