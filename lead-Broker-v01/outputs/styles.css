@@ -150,7 +150,9 @@ a[href],
 .floating-whatsapp:focus-visible,
 .modal-close:focus-visible,
 .land-detail-close:focus-visible,
-.image-modal-close:focus-visible {
+.image-modal-close:focus-visible,
+.admin-tab:focus-visible,
+.gallery-arrow:focus-visible {
   outline: 2px solid rgba(240, 215, 164, 0.75);
   outline-offset: 3px;
 }
@@ -555,6 +557,45 @@ textarea {
   margin-bottom: 1.2rem;
 }
 
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+}
+
+.admin-tab {
+  min-height: 2.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 0.65rem 1rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
+}
+
+.admin-tab.is-active {
+  border-color: rgba(240, 215, 164, 0.7);
+  background: linear-gradient(135deg, rgba(240, 215, 164, 0.18), rgba(33, 166, 110, 0.12));
+  color: var(--gold-soft);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+.admin-section:not(.is-active) {
+  display: none;
+}
+
+.settings-panel {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1.2rem;
+}
+
 .land-toolbar label,
 .admin-form label {
   display: grid;
@@ -666,6 +707,42 @@ textarea {
   color: var(--gold-soft);
   padding: 0.5rem 0.75rem;
   font-weight: 1000;
+}
+
+.land-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 1000;
+}
+
+.land-status.available {
+  border-color: rgba(33, 166, 110, 0.48);
+  background: rgba(33, 166, 110, 0.18);
+  color: #bff2d4;
+}
+
+.land-status.reserved {
+  border-color: rgba(240, 215, 164, 0.55);
+  background: rgba(240, 215, 164, 0.16);
+  color: var(--gold-soft);
+}
+
+.land-status.sold {
+  border-color: rgba(255, 138, 138, 0.42);
+  background: rgba(255, 138, 138, 0.13);
+  color: #ffd0d0;
+}
+
+.land-status-card {
+  position: absolute;
+  left: 0.8rem;
+  top: 0.8rem;
+  backdrop-filter: blur(12px);
 }
 
 .land-body {
@@ -1157,6 +1234,11 @@ textarea {
   gap: 0.8rem;
 }
 
+.land-gallery-stage {
+  position: relative;
+  min-height: 22rem;
+}
+
 .land-gallery-main,
 .land-gallery-thumb {
   overflow: hidden;
@@ -1166,6 +1248,7 @@ textarea {
 }
 
 .land-gallery-main {
+  height: 100%;
   min-height: 22rem;
   cursor: zoom-in;
 }
@@ -1181,8 +1264,11 @@ textarea {
 
 .land-gallery-thumbs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
   gap: 0.8rem;
+  max-height: 22rem;
+  overflow: auto;
+  padding-right: 0.25rem;
 }
 
 .land-gallery-thumb {
@@ -1209,6 +1295,48 @@ textarea {
   height: 100%;
   min-height: 10.6rem;
   object-fit: cover;
+}
+
+.gallery-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 1px solid rgba(240, 215, 164, 0.48);
+  border-radius: 50%;
+  background: rgba(7, 16, 15, 0.78);
+  color: var(--gold-soft);
+  cursor: pointer;
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-50%);
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
+}
+
+.gallery-arrow.prev {
+  left: 0.75rem;
+}
+
+.gallery-arrow.next {
+  right: 0.75rem;
+}
+
+.gallery-counter {
+  position: absolute;
+  right: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 2;
+  border: 1px solid rgba(240, 215, 164, 0.35);
+  border-radius: 999px;
+  background: rgba(7, 16, 15, 0.82);
+  color: var(--gold-soft);
+  padding: 0.38rem 0.65rem;
+  font-size: 0.86rem;
+  font-weight: 900;
 }
 
 .land-detail-grid {
@@ -1280,8 +1408,13 @@ textarea {
   .modal-close:hover,
   .land-detail-close:hover,
   .image-modal-close:hover,
-  .saved-image-card button:hover {
+  .saved-image-card button:hover,
+  .admin-tab:hover {
     transform: translateY(-2px) scale(1.025);
+  }
+
+  .gallery-arrow:hover {
+    transform: translateY(-50%) scale(1.08);
   }
 
   .site-nav a:hover,
@@ -1292,7 +1425,9 @@ textarea {
   .modal-close:hover,
   .land-detail-close:hover,
   .image-modal-close:hover,
-  .saved-image-card button:hover {
+  .saved-image-card button:hover,
+  .admin-tab:hover,
+  .gallery-arrow:hover {
     border-color: rgba(240, 215, 164, 0.52);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
   }
@@ -1548,6 +1683,10 @@ footer a {
     align-items: start;
   }
 
+  .land-gallery-stage {
+    min-height: 16rem;
+  }
+
   .land-gallery-main,
   .land-gallery-main img,
   .land-gallery-main svg {
@@ -1556,6 +1695,8 @@ footer a {
 
   .land-gallery-thumbs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    padding-right: 0;
   }
 
   .land-gallery-thumb,

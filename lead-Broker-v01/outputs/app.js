@@ -11,6 +11,13 @@ let landsCache = [];
 let clientsCache = [];
 let removedImageUrls = new Set();
 let imageManagerItems = [];
+let activeAdminTab = "lands";
+
+const landStatuses = {
+  available: { label: "Disponible", className: "available" },
+  reserved: { label: "Reservado", className: "reserved" },
+  sold: { label: "Vendido", className: "sold" },
+};
 
 const properties = [
   {
@@ -54,6 +61,7 @@ const defaultLands = [
     gallery: [],
     image: "",
     map_url: "",
+    status: "available",
   },
   {
     id: "land-2",
@@ -69,6 +77,7 @@ const defaultLands = [
     gallery: [],
     image: "",
     map_url: "",
+    status: "available",
   },
   {
     id: "land-3",
@@ -84,6 +93,7 @@ const defaultLands = [
     gallery: [],
     image: "",
     map_url: "",
+    status: "available",
   },
 ];
 
@@ -127,6 +137,29 @@ function parsePrice(price) {
 
 function displayPrice(land) {
   return formatPrice(land.priceCurrency || parsePrice(land.price).currency, land.priceAmount || parsePrice(land.price).amount);
+}
+
+function landStatus(land = {}) {
+  return landStatuses[land.status] || landStatuses.available;
+}
+
+function formatLandDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("es-UY", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function landDateLabel(land = {}) {
+  const updated = formatLandDate(land.updated_at || land.updatedAt);
+  const created = formatLandDate(land.created_at || land.createdAt);
+  if (updated) return `Actualizado ${updated}`;
+  if (created) return `Publicado ${created}`;
+  return "Publicado recientemente";
 }
 
 function setWhatsappLinks() {
@@ -357,9 +390,9 @@ async function saveLand(land) {
   const lands = loadFallbackLands();
   if (land.id) {
     const index = lands.findIndex((item) => item.id === land.id);
-    if (index >= 0) lands[index] = { ...lands[index], ...land };
+    if (index >= 0) lands[index] = { ...lands[index], ...land, updated_at: new Date().toISOString() };
   } else {
-    lands.unshift({ ...land, id: `land-${Date.now()}` });
+    lands.unshift({ ...land, id: `land-${Date.now()}`, created_at: new Date().toISOString() });
   }
   saveFallbackLands(lands);
   landsCache = lands;
@@ -484,7 +517,9 @@ function openLandDetail(id) {
   const images = landImages(land);
   const galleryImages = images.length ? images : [""];
   const mainImage = galleryImages[0];
-  const thumbs = galleryImages.slice(0, 6);
+  const thumbs = galleryImages;
+  const status = landStatus(land);
+  const dateLabel = landDateLabel(land);
   const sellerName = land.seller_name || land.sellerName || "Agustina";
   const sellerPhone = land.seller_phone || land.sellerPhone || "092 420 997";
   const sellerDescription =
@@ -505,21 +540,29 @@ function openLandDetail(id) {
 
   content.dataset.gallery = JSON.stringify(galleryImages);
   content.dataset.landTitle = land.title;
+  content.dataset.galleryIndex = "0";
   content.innerHTML = `
     <div class="land-detail-head">
       <div>
         <p class="eyebrow">Ficha del terreno</p>
         <h2>${escapeHtml(land.title)}</h2>
         <div class="land-meta">
+          <span class="land-status ${status.className}">${escapeHtml(status.label)}</span>
           <span>${escapeHtml(landPrice)}</span>
           <span>${escapeHtml(land.location)}</span>
           <span>${escapeHtml(land.size)}</span>
+          <span>${escapeHtml(dateLabel)}</span>
         </div>
       </div>
       <button class="land-detail-close" type="button" data-close-detail aria-label="Cerrar">×</button>
     </div>
     <div class="land-gallery">
-      ${galleryItem(mainImage, land, "land-gallery-main", 0)}
+      <div class="land-gallery-stage">
+        <button class="gallery-arrow prev" type="button" data-gallery-prev aria-label="Imagen anterior">‹</button>
+        ${galleryItem(mainImage, land, "land-gallery-main", 0)}
+        <button class="gallery-arrow next" type="button" data-gallery-next aria-label="Imagen siguiente">›</button>
+        <span class="gallery-counter" data-gallery-counter>1 / ${galleryImages.length}</span>
+      </div>
       <div class="land-gallery-thumbs">
         ${thumbs.map((image, index) => galleryItem(image, land, "land-gallery-thumb", index)).join("")}
       </div>
@@ -558,7 +601,7 @@ async function renderLands() {
   const lands = await loadLands();
   const admin = isAdminLoggedIn();
   const filtered = lands.filter((land) =>
-    [land.title, displayPrice(land), land.location, land.size, land.description]
+    [land.title, displayPrice(land), land.location, land.size, land.description, landStatus(land).label, landDateLabel(land)]
       .join(" ")
       .toLowerCase()
       .includes(query)
@@ -572,6 +615,8 @@ async function renderLands() {
   list.innerHTML = filtered
     .map((land) => {
       const landPrice = displayPrice(land);
+      const status = landStatus(land);
+      const dateLabel = landDateLabel(land);
       const message = [
         "Hola Agustina, quiero consultar por este terreno.",
         `Terreno: ${land.title}`,
@@ -586,6 +631,7 @@ async function renderLands() {
         <article class="land-card">
           <div class="land-image">
             ${landCardImage(land)}
+            <span class="land-status land-status-card ${status.className}">${escapeHtml(status.label)}</span>
             <span class="land-price">${escapeHtml(landPrice)}</span>
           </div>
           <div class="land-body">
@@ -594,6 +640,7 @@ async function renderLands() {
               <div class="land-meta">
                 <span>${escapeHtml(land.location)}</span>
                 <span>${escapeHtml(land.size)}</span>
+                <span>${escapeHtml(dateLabel)}</span>
               </div>
             </div>
             <p>${escapeHtml(land.description)}</p>
@@ -634,8 +681,24 @@ async function updateAdminUi() {
     form.classList.add("is-hidden");
   }
 
+  updateAdminSections();
   await renderLands();
   await renderClients();
+}
+
+function updateAdminSections() {
+  const admin = isAdminLoggedIn();
+
+  document.querySelectorAll("[data-admin-tab]").forEach((button) => {
+    const isActive = button.dataset.adminTab === activeAdminTab;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  document.querySelectorAll("[data-admin-section]").forEach((section) => {
+    const name = section.dataset.adminSection;
+    section.classList.toggle("is-active", name === "lands" || (admin && name === activeAdminTab));
+  });
 }
 
 function clientDate(value) {
@@ -758,6 +821,7 @@ function resetLandForm() {
   form.elements.landId.value = "";
   removedImageUrls = new Set();
   imageManagerItems = [];
+  if (form.elements.status) form.elements.status.value = "available";
   if (form.elements.priceCurrency) form.elements.priceCurrency.value = "USD";
   updatePricePreview();
   if (title) title.textContent = "Subir nuevo terreno";
@@ -870,7 +934,17 @@ function setupLandManager() {
 
   toggle.addEventListener("click", () => {
     if (!isAdminLoggedIn()) return;
+    activeAdminTab = "lands";
+    updateAdminSections();
     form.classList.toggle("is-hidden");
+  });
+
+  document.querySelectorAll("[data-admin-tab]").forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!isAdminLoggedIn()) return;
+      activeAdminTab = button.dataset.adminTab || "lands";
+      updateAdminSections();
+    });
   });
 
   if (search) {
@@ -959,6 +1033,7 @@ function setupLandManager() {
       const parsedPrice = parsePrice(land.price);
       form.elements.landId.value = land.id;
       form.elements.title.value = land.title;
+      if (form.elements.status) form.elements.status.value = land.status || "available";
       form.elements.priceCurrency.value = land.priceCurrency || parsedPrice.currency;
       form.elements.priceAmount.value = formatThousands(land.priceAmount || parsedPrice.amount);
       form.elements.location.value = land.location;
@@ -1022,6 +1097,7 @@ function setupLandManager() {
       await saveLand({
         id: editingId || undefined,
         title: data.get("title"),
+        status: data.get("status") || "available",
         price: formatPrice(currency, amount),
         location: data.get("location"),
         map_url: data.get("mapUrl"),
@@ -1041,7 +1117,7 @@ function setupLandManager() {
       if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
     } catch (error) {
       if (note) {
-        const needsSql = /column|schema cache|map_url|gallery|long_description|seller_/i.test(error.message);
+        const needsSql = /column|schema cache|map_url|gallery|long_description|seller_|status|updated_at/i.test(error.message);
         note.textContent = needsSql
           ? `No se pudo guardar: ${error.message}. Ejecutá el SQL actualizado en Supabase.`
           : `No se pudo guardar: ${error.message}`;
@@ -1096,6 +1172,16 @@ function setupLandDetailModal() {
       return;
     }
 
+    if (event.target.closest("[data-gallery-prev]")) {
+      moveGallery(content, -1);
+      return;
+    }
+
+    if (event.target.closest("[data-gallery-next]")) {
+      moveGallery(content, 1);
+      return;
+    }
+
     const thumb = event.target.closest("[data-gallery-index]");
     if (thumb) {
       selectGalleryImage(content, thumb);
@@ -1107,6 +1193,18 @@ function setupLandDetailModal() {
   });
 
   content.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      moveGallery(content, -1);
+      return;
+    }
+
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      moveGallery(content, 1);
+      return;
+    }
+
     if (event.key !== "Enter" && event.key !== " ") return;
 
     const thumb = event.target.closest("[data-gallery-index]");
@@ -1161,15 +1259,49 @@ function selectGalleryImage(content, thumb) {
   }
 
   const index = Number(thumb.dataset.galleryIndex || 0);
+  updateGalleryImage(content, index);
+}
+
+function moveGallery(content, direction) {
+  let images = [];
+  try {
+    images = JSON.parse(content.dataset.gallery || "[]");
+  } catch (error) {
+    images = [];
+  }
+
+  if (!images.length) return;
+
+  const current = Number(content.dataset.galleryIndex || 0);
+  const next = (current + direction + images.length) % images.length;
+  updateGalleryImage(content, next);
+}
+
+function updateGalleryImage(content, index) {
+  const main = content.querySelector("[data-gallery-main]");
+  if (!main) return;
+
+  let images = [];
+  try {
+    images = JSON.parse(content.dataset.gallery || "[]");
+  } catch (error) {
+    images = [];
+  }
+
   const image = images[index] || "";
   const title = content.dataset.landTitle || "Terreno";
+  const counter = content.querySelector("[data-gallery-counter]");
 
+  content.dataset.galleryIndex = String(index);
   main.innerHTML = image
     ? `<img src="${image}" alt="Imagen de ${escapeHtml(title)}" />`
     : placeholderLandSvg(title);
 
-  content.querySelectorAll("[data-gallery-index]").forEach((item) => item.classList.remove("is-active"));
-  thumb.classList.add("is-active");
+  content.querySelectorAll("[data-gallery-index]").forEach((item) => {
+    item.classList.toggle("is-active", Number(item.dataset.galleryIndex || 0) === index);
+  });
+
+  if (counter) counter.textContent = `${index + 1} / ${images.length || 1}`;
 }
 
 function setupLogin() {

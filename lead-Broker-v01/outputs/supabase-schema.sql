@@ -1,6 +1,7 @@
 create table if not exists public.lands (
   id uuid primary key default gen_random_uuid(),
   title text not null,
+  status text not null default 'available',
   price text not null,
   location text not null,
   map_url text default '',
@@ -12,7 +13,8 @@ create table if not exists public.lands (
   seller_description text default '',
   gallery jsonb not null default '[]'::jsonb,
   image text default '',
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz
 );
 
 create table if not exists public.clients (
@@ -31,6 +33,8 @@ alter table public.lands add column if not exists seller_phone text default '';
 alter table public.lands add column if not exists seller_description text default '';
 alter table public.lands add column if not exists gallery jsonb not null default '[]'::jsonb;
 alter table public.lands add column if not exists map_url text default '';
+alter table public.lands add column if not exists status text not null default 'available';
+alter table public.lands add column if not exists updated_at timestamptz;
 
 alter table public.lands enable row level security;
 alter table public.clients enable row level security;
@@ -51,6 +55,7 @@ with check (true);
 
 insert into public.lands (
   title,
+  status,
   price,
   location,
   map_url,
@@ -68,6 +73,7 @@ from (
   values
     (
       'Terreno urbano con servicios',
+      'available',
       'USD 32.000',
       'Zona residencial',
       '',
@@ -82,6 +88,7 @@ from (
     ),
     (
       'Lote amplio para desarrollo',
+      'available',
       'USD 58.000',
       'A metros de ruta principal',
       '',
@@ -96,6 +103,7 @@ from (
     ),
     (
       'Terreno listo para escriturar',
+      'available',
       'Consultar',
       'Barrio tranquilo',
       '',
@@ -108,5 +116,7 @@ from (
       '[]'::jsonb,
       ''
     )
-) as seed(title, price, location, map_url, size, description, long_description, seller_name, seller_phone, seller_description, gallery, image)
+) as seed(title, status, price, location, map_url, size, description, long_description, seller_name, seller_phone, seller_description, gallery, image)
 where not exists (select 1 from public.lands);
+
+notify pgrst, 'reload schema';

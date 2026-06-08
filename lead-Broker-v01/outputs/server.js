@@ -16,6 +16,7 @@ const defaultLands = [
   {
     id: "land-1",
     title: "Terreno urbano con servicios",
+    status: "available",
     price: "USD 32.000",
     location: "Zona residencial",
     size: "420 m2",
@@ -31,6 +32,7 @@ const defaultLands = [
   {
     id: "land-2",
     title: "Lote amplio para desarrollo",
+    status: "available",
     price: "USD 58.000",
     location: "A metros de ruta principal",
     size: "900 m2",
@@ -46,6 +48,7 @@ const defaultLands = [
   {
     id: "land-3",
     title: "Terreno listo para escriturar",
+    status: "available",
     price: "Consultar",
     location: "Barrio tranquilo",
     size: "510 m2",
@@ -183,6 +186,7 @@ function cleanLand(input, current = {}) {
   return {
     id: current.id || input.id || `land-${Date.now()}`,
     title: String(valueOrCurrent(input, "title", current) || "").trim(),
+    status: String(valueOrCurrent(input, "status", current) || "available").trim(),
     price: String(valueOrCurrent(input, "price", current) || "").trim(),
     location: String(valueOrCurrent(input, "location", current) || "").trim(),
     map_url: String(valueOrCurrent(input, "map_url", current) || "").trim(),
@@ -194,6 +198,8 @@ function cleanLand(input, current = {}) {
     seller_description: String(valueOrCurrent(input, "seller_description", current) || "").trim(),
     gallery: uniqueImages(gallery).filter((item) => item !== image),
     image,
+    created_at: current.created_at || input.created_at || new Date().toISOString(),
+    updated_at: current.id ? new Date().toISOString() : valueOrCurrent(input, "updated_at", current),
   };
 }
 

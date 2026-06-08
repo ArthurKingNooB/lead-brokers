@@ -8,6 +8,7 @@
       name="description"
       content="Lead Brokers conecta propietarios, terrenos, locales y negocios con clientes calificados, proveedores confiables y cierre profesional de contratos."
     />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -199,6 +200,13 @@
           <button class="btn ghost admin-only is-hidden" type="button" id="toggleAdmin">Cargar terreno</button>
         </div>
 
+        <div class="admin-tabs admin-only is-hidden" id="adminTabs" role="tablist" aria-label="Panel de Agustina">
+          <button class="admin-tab is-active" type="button" data-admin-tab="lands">Terrenos</button>
+          <button class="admin-tab" type="button" data-admin-tab="clients">Clientes</button>
+          <button class="admin-tab" type="button" data-admin-tab="settings">Configuracion</button>
+        </div>
+
+        <section class="admin-section" data-admin-section="clients">
         <section class="client-panel admin-only is-hidden" id="clientPanel">
           <div class="admin-form-head">
             <div>
@@ -212,6 +220,9 @@
           </div>
         </section>
 
+        </section>
+
+        <section class="admin-section" data-admin-section="lands">
         <div class="land-grid" id="landList" aria-live="polite"></div>
 
         <form class="admin-form is-hidden" id="landForm">
@@ -230,6 +241,14 @@
             <label>
               Título
               <input name="title" type="text" required placeholder="Ej: Terreno en barrio privado" />
+            </label>
+            <label>
+              Estado
+              <select name="status" required>
+                <option value="available">Disponible</option>
+                <option value="reserved">Reservado</option>
+                <option value="sold">Vendido</option>
+              </select>
             </label>
             <label>
               Precio
@@ -297,6 +316,16 @@
           <button class="btn primary" id="landSubmitButton" type="submit">Publicar terreno</button>
           <p class="form-note" id="landNote" role="status"></p>
         </form>
+        </section>
+
+        <section class="admin-section" data-admin-section="settings">
+          <div class="settings-panel admin-only is-hidden">
+            <p class="eyebrow">Configuración</p>
+            <h3>Datos rápidos del sitio</h3>
+            <p>Teléfono de contacto activo: <strong>092 420 997</strong></p>
+            <p>Los cambios de terrenos y clientes quedan guardados en Supabase cuando la web está publicada.</p>
+          </div>
+        </section>
       </section>
 
       <section class="section provider-band" id="proveedores">

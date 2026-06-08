@@ -8,7 +8,10 @@ export default async function handler(req, res) {
 
     if (req.method === "PUT") {
       const body = await readJson(req);
-      const land = normalizeLand(body);
+      const land = {
+        ...normalizeLand(body),
+        updated_at: new Date().toISOString(),
+      };
 
       await supabase(`/lands?id=eq.${encodeURIComponent(id)}`, {
         method: "PATCH",

@@ -4,6 +4,8 @@ alter table public.lands add column if not exists seller_phone text default '';
 alter table public.lands add column if not exists seller_description text default '';
 alter table public.lands add column if not exists gallery jsonb not null default '[]'::jsonb;
 alter table public.lands add column if not exists map_url text default '';
+alter table public.lands add column if not exists status text not null default 'available';
+alter table public.lands add column if not exists updated_at timestamptz;
 
 create table if not exists public.clients (
   id uuid primary key default gen_random_uuid(),
