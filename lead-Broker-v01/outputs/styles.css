@@ -235,6 +235,12 @@ h3 {
   color: var(--text);
 }
 
+.is-copied {
+  border-color: rgba(33, 166, 110, 0.72) !important;
+  background: rgba(33, 166, 110, 0.18) !important;
+  color: #bff2d4 !important;
+}
+
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -837,6 +843,107 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+}
+
+.thanks-card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 1rem;
+  border: 1px solid rgba(240, 215, 164, 0.36);
+  border-radius: 0.55rem;
+  background:
+    linear-gradient(135deg, rgba(33, 166, 110, 0.16), rgba(213, 167, 100, 0.1)),
+    rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  padding: 1.1rem;
+  animation: thanks-in 0.45s ease-out both;
+}
+
+.thanks-card::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -60% 24%;
+  height: 9rem;
+  background: radial-gradient(circle, rgba(240, 215, 164, 0.22), transparent 68%);
+  pointer-events: none;
+}
+
+.thanks-card.compact {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.thanks-card h3 {
+  margin-bottom: 0.35rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.8rem;
+}
+
+.thanks-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.thanks-animation {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4.6rem;
+  height: 4.6rem;
+}
+
+.thanks-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(240, 215, 164, 0.55);
+  border-radius: 50%;
+  animation: thanks-ring 1.4s ease-out infinite;
+}
+
+.thanks-check {
+  display: grid;
+  place-items: center;
+  width: 3.35rem;
+  height: 3.35rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #7bd99f);
+  color: #04100c;
+  font-size: 1.65rem;
+  font-weight: 1000;
+  box-shadow: 0 12px 34px rgba(33, 166, 110, 0.28);
+  animation: thanks-pop 0.55s cubic-bezier(0.2, 1.4, 0.35, 1) both;
+}
+
+@keyframes thanks-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes thanks-pop {
+  from {
+    transform: scale(0.55) rotate(-10deg);
+  }
+  to {
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes thanks-ring {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.75);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
 }
 
 .floating-whatsapp {

@@ -721,9 +721,24 @@ async function shareLand(id) {
   const text = `${land.title} - ${displayPrice(land)}\n${landShareUrl(land)}`;
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch {
     window.prompt("Copiar link del terreno:", text);
+    return false;
   }
+}
+
+function showCopiedFeedback(element, label = "Copiado") {
+  if (!element) return;
+
+  const original = element.textContent;
+  element.textContent = label;
+  element.classList.add("is-copied");
+
+  window.setTimeout(() => {
+    element.textContent = original;
+    element.classList.remove("is-copied");
+  }, 1800);
 }
 
 function resetLandForm() {
@@ -920,7 +935,8 @@ function setupLandManager() {
 
     const shareButton = event.target.closest("[data-share-land-id]");
     if (shareButton) {
-      await shareLand(shareButton.dataset.shareLandId);
+      const copied = await shareLand(shareButton.dataset.shareLandId);
+      showCopiedFeedback(shareButton, copied ? "Copiado" : "Copiar");
       if (note) note.textContent = "Link del terreno copiado para compartir.";
       return;
     }
@@ -1064,9 +1080,10 @@ function setupLandDetailModal() {
 
     const shareButton = event.target.closest("[data-share-land-id]");
     if (shareButton) {
-      await shareLand(shareButton.dataset.shareLandId);
+      const copied = await shareLand(shareButton.dataset.shareLandId);
+      showCopiedFeedback(shareButton, copied ? "Copiado" : "Copiar");
       const helper = content.querySelector("[data-share-status]");
-      if (helper) helper.textContent = "Link copiado para compartir.";
+      if (helper) helper.textContent = copied ? "Link copiado para compartir." : "Copiá el link desde la ventana.";
       return;
     }
 
@@ -1241,13 +1258,7 @@ function setupForm() {
 
     try {
       await saveClient(client);
-      note.innerHTML = `
-        <span>Consulta registrada. Podés enviar WhatsApp ahora o quedar en espera.</span>
-        <span class="form-note-actions">
-          <a class="btn primary" href="${whatsappLink}" target="_blank" rel="noopener">Enviar WhatsApp</a>
-          <button class="btn ghost" type="button" data-wait-contact>Quedar en espera</button>
-        </span>
-      `;
+      showThanksState(note, client, whatsappLink);
       await renderClients();
     } catch (error) {
       note.innerHTML = `
@@ -1262,9 +1273,35 @@ function setupForm() {
   note.addEventListener("click", (event) => {
     if (!event.target.closest("[data-wait-contact]")) return;
 
-    note.textContent = "Perfecto, quedaste registrado. Agustina te contacta cuando pueda.";
+    note.innerHTML = `
+      <div class="thanks-card compact">
+        <span class="thanks-check">✓</span>
+        <strong>Quedaste en espera</strong>
+        <p>Agustina ya tiene tus datos y te contacta cuando pueda.</p>
+      </div>
+    `;
     form.reset();
   });
+}
+
+function showThanksState(container, client, whatsappLink) {
+  container.innerHTML = `
+    <div class="thanks-card">
+      <div class="thanks-animation" aria-hidden="true">
+        <span class="thanks-ring"></span>
+        <span class="thanks-check">✓</span>
+      </div>
+      <div>
+        <p class="eyebrow">Consulta guardada</p>
+        <h3>¡Gracias, ${escapeHtml(client.name)}!</h3>
+        <p>Ya recibimos tus datos. Podés enviar el WhatsApp ahora o quedarte en espera para que Agustina te contacte.</p>
+      </div>
+      <div class="form-note-actions">
+        <a class="btn primary" href="${whatsappLink}" target="_blank" rel="noopener">Enviar WhatsApp</a>
+        <button class="btn ghost" type="button" data-wait-contact>Quedar en espera</button>
+      </div>
+    </div>
+  `;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
