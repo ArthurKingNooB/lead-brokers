@@ -872,6 +872,7 @@ textarea {
 .thanks-card.compact {
   grid-template-columns: auto 1fr;
   align-items: center;
+  column-gap: 1rem;
 }
 
 .thanks-card h3 {
@@ -883,6 +884,16 @@ textarea {
 .thanks-card p {
   margin-bottom: 0;
   color: var(--muted);
+}
+
+.thanks-card.compact strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+
+.thanks-card.compact p {
+  line-height: 1.45;
 }
 
 .thanks-animation {

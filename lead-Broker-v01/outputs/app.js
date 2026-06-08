@@ -1276,8 +1276,10 @@ function setupForm() {
     note.innerHTML = `
       <div class="thanks-card compact">
         <span class="thanks-check">✓</span>
-        <strong>Quedaste en espera</strong>
-        <p>Agustina ya tiene tus datos y te contacta cuando pueda.</p>
+        <div>
+          <strong>Quedaste en espera</strong>
+          <p>Agustina ya tiene tus datos y te contacta cuando pueda.</p>
+        </div>
       </div>
     `;
     form.reset();
