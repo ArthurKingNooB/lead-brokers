@@ -204,10 +204,22 @@ async function apiRequest(path, options = {}) {
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { error: text.trim() };
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(payload?.error || "Error de servidor");
+    const message = payload?.error || payload?.message || text || "Error de servidor";
+    if (response.status === 413 || /request entity too large/i.test(message)) {
+      throw new Error("Las imágenes son demasiado pesadas. Probá con menos fotos o fotos más livianas.");
+    }
+    throw new Error(message);
   }
 
   return payload;
@@ -752,18 +764,40 @@ function updatePricePreview() {
   preview.textContent = `Vista previa: ${formatPrice(currency.value, amount.value || "32000")}`;
 }
 
-function fileToDataUrl(file) {
+function imageLoaded(image) {
   return new Promise((resolve, reject) => {
-    if (!file || !file.size || !file.type.startsWith("image/")) {
-      resolve("");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(reader.result));
-    reader.addEventListener("error", reject);
-    reader.readAsDataURL(file);
+    image.addEventListener("load", resolve, { once: true });
+    image.addEventListener("error", reject, { once: true });
   });
+}
+
+async function fileToDataUrl(file) {
+  if (!file || !file.size || !file.type.startsWith("image/")) {
+    return "";
+  }
+
+  const image = new Image();
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    image.src = objectUrl;
+    await imageLoaded(image);
+
+    const maxWidth = 1400;
+    const maxHeight = 1100;
+    const scale = Math.min(1, maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0, width, height);
+    return canvas.toDataURL("image/jpeg", 0.74);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 
 async function filesToDataUrls(files) {
@@ -987,7 +1021,10 @@ function setupLandManager() {
       if (note) note.textContent = editingId ? "Terreno actualizado en la base de datos." : "Terreno publicado en la base de datos.";
     } catch (error) {
       if (note) {
-        note.textContent = `No se pudo guardar: ${error.message}. Si agregaste la ficha ampliada, ejecuta el SQL actualizado en Supabase.`;
+        const needsSql = /column|schema cache|map_url|gallery|long_description|seller_/i.test(error.message);
+        note.textContent = needsSql
+          ? `No se pudo guardar: ${error.message}. Ejecutá el SQL actualizado en Supabase.`
+          : `No se pudo guardar: ${error.message}`;
       }
     } finally {
       if (submitButton) submitButton.disabled = false;
