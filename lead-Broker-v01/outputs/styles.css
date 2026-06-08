@@ -43,6 +43,17 @@ textarea {
   font: inherit;
 }
 
+button,
+a {
+  -webkit-tap-highlight-color: rgba(240, 215, 164, 0.18);
+}
+
+button:not(:disabled),
+a[href],
+[role="button"] {
+  cursor: pointer;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -104,6 +115,7 @@ textarea {
   border-radius: 999px;
   color: var(--muted);
   padding: 0.65rem 0.9rem;
+  transition: background 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .login-button {
@@ -114,6 +126,7 @@ textarea {
   cursor: pointer;
   padding: 0.65rem 0.9rem;
   font-weight: 900;
+  transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .site-nav a:hover,
@@ -122,6 +135,29 @@ textarea {
 .login-button:focus {
   color: var(--text);
   background: rgba(255, 255, 255, 0.07);
+}
+
+.site-nav a:focus-visible,
+.login-button:focus-visible,
+.btn:focus-visible,
+.contact-cards a:focus-visible,
+.view-land:focus-visible,
+.edit-land:focus-visible,
+.map-land:focus-visible,
+.share-land:focus-visible,
+.delete-land:focus-visible,
+.client-done:focus-visible,
+.floating-whatsapp:focus-visible,
+.modal-close:focus-visible,
+.land-detail-close:focus-visible,
+.image-modal-close:focus-visible {
+  outline: 2px solid rgba(240, 215, 164, 0.75);
+  outline-offset: 3px;
+}
+
+.saved-image-card button:focus-visible {
+  outline: 2px solid rgba(240, 215, 164, 0.75);
+  outline-offset: 3px;
 }
 
 .site-nav .nav-cta {
@@ -242,6 +278,20 @@ h3 {
 .contact-cards a {
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
+}
+
+.btn.primary:hover,
+.btn.primary:focus-visible {
+  background: linear-gradient(135deg, #fff0c5, var(--gold));
+}
+
+.btn.ghost:hover,
+.btn.ghost:focus-visible,
+.contact-cards a:hover,
+.contact-cards a:focus-visible {
+  border-color: rgba(240, 215, 164, 0.52);
+  background: rgba(240, 215, 164, 0.12);
+  color: var(--gold-soft);
 }
 
 .is-copied {
@@ -572,6 +622,7 @@ textarea {
   font-size: 0.85rem;
   font-weight: 900;
   padding: 0.45rem 0.65rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .land-grid {
@@ -665,6 +716,7 @@ textarea {
   cursor: pointer;
   font-weight: 900;
   padding: 0 0.8rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .map-land,
@@ -681,6 +733,7 @@ textarea {
   cursor: pointer;
   font-weight: 900;
   padding: 0 0.8rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .view-land {
@@ -692,6 +745,7 @@ textarea {
   cursor: pointer;
   font-weight: 900;
   padding: 0 0.8rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .admin-only.is-hidden,
@@ -770,6 +824,7 @@ textarea {
   cursor: pointer;
   font-weight: 900;
   padding: 0 0.85rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .client-done:disabled {
@@ -1017,6 +1072,7 @@ textarea {
   box-shadow: var(--shadow);
   color: white;
   font-weight: 1000;
+  transition: background 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 
 .login-modal,
@@ -1092,6 +1148,7 @@ textarea {
   color: var(--text);
   cursor: pointer;
   font-size: 1.3rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
 }
 
 .land-gallery {
@@ -1205,6 +1262,58 @@ textarea {
   color: var(--text);
   cursor: pointer;
   font-size: 1.35rem;
+  transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, transform 0.22s ease;
+}
+
+@media (hover: hover) {
+  .site-nav a:hover,
+  .login-button:hover,
+  .btn:hover,
+  .contact-cards a:hover,
+  .view-land:hover,
+  .edit-land:hover,
+  .map-land:hover,
+  .share-land:hover,
+  .delete-land:hover,
+  .client-done:hover,
+  .floating-whatsapp:hover,
+  .modal-close:hover,
+  .land-detail-close:hover,
+  .image-modal-close:hover,
+  .saved-image-card button:hover {
+    transform: translateY(-2px) scale(1.025);
+  }
+
+  .site-nav a:hover,
+  .login-button:hover,
+  .view-land:hover,
+  .map-land:hover,
+  .share-land:hover,
+  .modal-close:hover,
+  .land-detail-close:hover,
+  .image-modal-close:hover,
+  .saved-image-card button:hover {
+    border-color: rgba(240, 215, 164, 0.52);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  .site-nav .nav-cta:hover,
+  .btn.primary:hover,
+  .edit-land:hover {
+    box-shadow: 0 14px 34px rgba(213, 167, 100, 0.22);
+  }
+
+  .client-done:hover,
+  .floating-whatsapp:hover {
+    box-shadow: 0 14px 34px rgba(33, 166, 110, 0.25);
+  }
+
+  .delete-land:hover {
+    border-color: rgba(255, 138, 138, 0.45);
+    background: rgba(255, 138, 138, 0.11);
+    color: #ffd0d0;
+    box-shadow: 0 14px 34px rgba(143, 46, 46, 0.2);
+  }
 }
 
 footer {
