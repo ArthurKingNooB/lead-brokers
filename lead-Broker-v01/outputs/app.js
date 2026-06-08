@@ -628,7 +628,7 @@ async function renderLands() {
       const mapUrl = landMapUrl(land);
 
       return `
-        <article class="land-card">
+        <article class="land-card" data-land-card-id="${escapeHtml(land.id)}" tabindex="0" role="button" aria-label="Ver ficha de ${escapeHtml(land.title)}">
           <div class="land-image">
             ${landCardImage(land)}
             <span class="land-status land-status-card ${status.className}">${escapeHtml(status.label)}</span>
@@ -1010,6 +1010,12 @@ function setupLandManager() {
       return;
     }
 
+    const card = event.target.closest("[data-land-card-id]");
+    if (card && !event.target.closest("a, button")) {
+      openLandDetail(card.dataset.landCardId);
+      return;
+    }
+
     const shareButton = event.target.closest("[data-share-land-id]");
     if (shareButton) {
       const copied = await shareLand(shareButton.dataset.shareLandId);
@@ -1059,6 +1065,15 @@ function setupLandManager() {
 
     await deleteLand(deleteButton.dataset.landId);
     await renderLands();
+  });
+
+  list.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const card = event.target.closest("[data-land-card-id]");
+    if (!card) return;
+
+    event.preventDefault();
+    openLandDetail(card.dataset.landCardId);
   });
 
   form.addEventListener("click", (event) => {
