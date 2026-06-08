@@ -1,5 +1,6 @@
 const phoneNumber = "59892420997";
 const baseMessage = "Hola Agustina, quiero consultar por Lead Brokers.";
+const publicSiteUrl = "https://lead-broker-chi.vercel.app/";
 const landsStorageKey = "lead-brokers-lands-fallback";
 const clientsStorageKey = "lead-brokers-clients-fallback";
 const adminTokenKey = "lead-brokers-admin-token";
@@ -137,7 +138,7 @@ function setWhatsappLinks() {
 }
 
 function landShareUrl(land) {
-  const url = new URL(window.location.href);
+  const url = new URL(publicSiteUrl);
   url.hash = `terreno-${land.id}`;
   return url.toString();
 }
