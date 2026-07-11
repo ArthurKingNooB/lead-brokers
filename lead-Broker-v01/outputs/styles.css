@@ -1886,3 +1886,306 @@ footer a {
     font-size: 0.92rem;
   }
 }
+
+/* Light editorial redesign */
+:root {
+  --bg: #f6f3ed;
+  --panel: #ffffff;
+  --panel-2: #eef3ed;
+  --text: #17211c;
+  --muted: #5f6a63;
+  --gold: #b8874a;
+  --gold-soft: #9d6f36;
+  --green: #26735a;
+  --line: rgba(32, 48, 39, 0.14);
+  --shadow: 0 22px 56px rgba(43, 56, 49, 0.14);
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(246, 243, 237, 0.94)),
+    radial-gradient(circle at 76% 0%, rgba(184, 135, 74, 0.16), transparent 28rem),
+    radial-gradient(circle at 4% 18%, rgba(38, 115, 90, 0.12), transparent 24rem),
+    var(--bg);
+  color: var(--text);
+  font-family: Aptos, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+}
+
+h1,
+h2,
+.thanks-card h3 {
+  font-family: Aptos, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.site-header {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom-color: rgba(32, 48, 39, 0.12);
+  box-shadow: 0 10px 32px rgba(43, 56, 49, 0.08);
+}
+
+.brand-mark {
+  border-color: rgba(38, 115, 90, 0.35);
+  background: linear-gradient(135deg, #ffffff, #e7efe8);
+  color: var(--green);
+}
+
+.brand small,
+.eyebrow,
+.tag,
+.land-price,
+footer a {
+  color: var(--green);
+}
+
+.site-nav a,
+.login-button {
+  color: #4e5a53;
+}
+
+.login-button,
+.nav-toggle {
+  background: #ffffff;
+  border-color: rgba(32, 48, 39, 0.16);
+}
+
+.site-nav a:hover,
+.site-nav a:focus,
+.login-button:hover,
+.login-button:focus {
+  background: rgba(38, 115, 90, 0.08);
+  color: var(--green);
+}
+
+.site-nav .nav-cta,
+.btn.primary,
+.contact-form button[type="submit"] {
+  background: #17211c;
+  color: #ffffff;
+}
+
+.hero {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0));
+}
+
+.hero-copy,
+.section-heading p,
+.split p,
+.provider-band p,
+.contact-section p,
+.land-body p,
+.land-detail-panel p,
+.client-card span,
+.client-card p,
+.file-helper,
+.price-preview {
+  color: var(--muted);
+}
+
+.hero-visual,
+.provider-visual {
+  overflow: hidden;
+  border: 1px solid rgba(32, 48, 39, 0.12);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(238, 243, 237, 0.92)),
+    #f4f1ea;
+  box-shadow: var(--shadow);
+}
+
+.hero-visual svg,
+.provider-visual svg {
+  opacity: 0.78;
+  filter: saturate(0.55) brightness(1.65) contrast(0.82);
+}
+
+.trust-strip,
+.service-card,
+.property-tool,
+.land-card,
+.admin-form,
+.client-panel,
+.settings-panel,
+.stats-panel,
+.timeline article,
+.contact-form,
+.land-detail-panel,
+.login-modal,
+.land-modal {
+  border-color: rgba(32, 48, 39, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow);
+}
+
+.trust-strip span,
+.mini-grid span,
+.property-item,
+.client-card,
+.stat-card,
+.saved-images-panel,
+.empty-state {
+  border-color: rgba(32, 48, 39, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+}
+
+.section,
+.land-section,
+.provider-band {
+  background: transparent;
+}
+
+input,
+select,
+textarea {
+  border-color: rgba(32, 48, 39, 0.16);
+  background: #ffffff;
+  color: var(--text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #8b948d;
+}
+
+.btn,
+.contact-cards a,
+.map-land,
+.visit-land,
+.share-land,
+.delete-land,
+.edit-land,
+.view-land,
+.client-done,
+.admin-tab,
+.modal-close,
+.land-detail-close {
+  border-color: rgba(32, 48, 39, 0.16);
+  background: #ffffff;
+  color: var(--text);
+}
+
+.btn.ghost,
+.contact-cards a,
+.view-land {
+  background: #ffffff;
+  color: var(--text);
+}
+
+.btn.primary:hover,
+.btn.primary:focus-visible,
+.site-nav .nav-cta:hover {
+  background: #26362e;
+  color: #ffffff;
+}
+
+.visit-land,
+.client-done {
+  border-color: rgba(38, 115, 90, 0.22);
+  background: rgba(38, 115, 90, 0.08);
+  color: var(--green);
+}
+
+.edit-land,
+.map-land,
+.share-land {
+  color: var(--green);
+}
+
+.delete-land {
+  color: #9a3e37;
+}
+
+.land-image {
+  background:
+    linear-gradient(135deg, rgba(38, 115, 90, 0.14), rgba(184, 135, 74, 0.13)),
+    #eef3ed;
+}
+
+.land-price {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 26px rgba(43, 56, 49, 0.12);
+}
+
+.land-meta span {
+  border-color: rgba(32, 48, 39, 0.12);
+  background: rgba(255, 255, 255, 0.66);
+  color: #526058;
+}
+
+.land-status.available {
+  border-color: rgba(38, 115, 90, 0.34);
+  background: #e3f1e8;
+  color: #18563f;
+  text-shadow: none;
+}
+
+.land-status.reserved {
+  border-color: rgba(184, 135, 74, 0.36);
+  background: #f6ebd8;
+  color: #7b5424;
+  text-shadow: none;
+}
+
+.land-status.sold {
+  border-color: rgba(154, 62, 55, 0.28);
+  background: #f5dfdc;
+  color: #8a332d;
+  text-shadow: none;
+}
+
+.land-status-card {
+  box-shadow: 0 10px 24px rgba(43, 56, 49, 0.12);
+}
+
+.admin-tab.is-active {
+  border-color: rgba(38, 115, 90, 0.32);
+  background: #e4f0e8;
+  color: var(--green);
+}
+
+.gallery-arrow,
+.gallery-counter,
+.image-modal-close {
+  border-color: rgba(32, 48, 39, 0.16);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+}
+
+.image-modal {
+  background: rgba(246, 243, 237, 0.96);
+}
+
+.image-modal::backdrop,
+.land-modal::backdrop,
+.login-modal::backdrop {
+  background: rgba(23, 33, 28, 0.36);
+  backdrop-filter: blur(7px);
+}
+
+.thanks-card {
+  border-color: rgba(38, 115, 90, 0.18);
+  background: linear-gradient(135deg, #ffffff, #edf6f0);
+}
+
+.thanks-check {
+  background: linear-gradient(135deg, #26735a, #71b990);
+  color: #ffffff;
+}
+
+.floating-whatsapp {
+  border-color: #ffffff;
+  background: var(--green);
+  box-shadow: 0 16px 38px rgba(38, 115, 90, 0.24);
+}
+
+footer {
+  border-top-color: rgba(32, 48, 39, 0.12);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+@media (max-width: 760px) {
+  .site-nav {
+    background: rgba(255, 255, 255, 0.96);
+  }
+}
